@@ -1,0 +1,839 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>PANACEA 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500..900&family=Jost:wght@300..600&display=swap">
+<style>
+/* Layout: one-screen night map in the poster's oxblood and gold. Header + live strip on top, a map that always covers the whole stage (never any empty margin), time scrubber at the bottom, details in a gold-framed panel on the right (bottom sheet on phones). */
+:root {
+  --ink: #16050a;
+  --land: #2a0d11;
+  --campus: #3a1a15;
+  --dental: #47281a;
+  --road-out: #4a2226;
+  --road-in: #6a4d28;
+  --road-per: #77582c;
+  --road-edge: #1d0a0c;
+  --text: #f3d98c;
+  --muted: #d4ad5e;
+  --faint: #b08d47;
+  --gold-hi: #ffe58a;
+  --gold: #d9ac47;
+  --gold-lo: #8a5c12;
+  --gold-grad: linear-gradient(180deg, #fff0a6 0%, #e2b74c 48%, #9a6a1a 100%);
+  --live: #ffd56a;
+  --soon: #f0a24a;
+  --idle: #b8975a;
+  --ended: #5b3b36;
+  --route: #fff3d0;
+  --surface: #230a0e;
+  --surface-2: #35141a;
+  --line: #5d3d26;
+  --f-display: "Bodoni Moda", "Didot", "Bodoni 72", "Playfair Display", Georgia, serif;
+  --f-body: "Jost", "Futura", "Century Gothic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "Jost", "Futura", system-ui, sans-serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0; color: var(--text); font-family: var(--f-body); font-size: 14px; font-variant-numeric: tabular-nums;
+  background-color: var(--ink);
+  background-image: radial-gradient(120% 90% at 50% 38%, #3a1417 0%, var(--ink) 75%);
+  display: grid; grid-template-rows: auto auto 1fr auto; overflow: hidden;
+}
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+.gutter { padding-left: max(40px, env(safe-area-inset-left, 0px)); padding-right: max(40px, env(safe-area-inset-right, 0px)); }
+
+/* Header */
+header { display: flex; align-items: center; gap: 18px; padding-block: 14px 12px; border-bottom: 1px solid transparent; border-image: linear-gradient(90deg, transparent, rgb(217 172 71 / .7) 18%, rgb(217 172 71 / .7) 82%, transparent) 1; position: relative; z-index: 6; }
+.brand { display: flex; flex-direction: column; gap: 5px; flex: none; }
+.wordmark { font-family: var(--f-display); font-weight: 800; font-size: clamp(26px, 3.4vw, 40px); letter-spacing: .03em; line-height: 1; margin: 0;
+  background: var(--gold-grad); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(1.5px 2px 0 #4a2d07); }
+.wordmark span { font-weight: 500; letter-spacing: .08em; }
+.sub { color: var(--muted); font-size: 10.5px; font-weight: 400; letter-spacing: .26em; text-transform: uppercase; }
+.sub .long { display: none; }
+.clock { text-align: right; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); white-space: nowrap; flex: none; }
+.clock b { display: block; font-family: var(--f-display); font-size: 22px; letter-spacing: .06em; color: var(--gold-hi); font-weight: 600; line-height: 1.1; }
+
+/* Search (shared combobox) */
+.combo { position: relative; min-width: 0; }
+.search { flex: 1; max-width: 520px; margin-left: auto; }
+.combo input { width: 100%; border: 1px solid var(--line); background: rgb(35 10 14 / .85); border-radius: 4px; padding: 10px 12px 10px 36px; outline: none; letter-spacing: .03em; }
+.combo input::placeholder { color: var(--faint); }
+.combo input:focus { border-color: var(--gold); }
+.combo .glass { position: absolute; left: 12px; top: 50%; width: 14px; height: 14px; transform: translateY(-50%); pointer-events: none; }
+.results { position: absolute; left: 0; right: 0; top: calc(100% + 6px); background: var(--surface); border: 1px solid var(--gold-lo); border-radius: 4px; box-shadow: 0 18px 40px rgb(0 0 0 / .6); max-height: min(420px, 60vh); overflow-y: auto; padding: 6px; z-index: 20; }
+.results h4 { margin: 6px 8px 4px; font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+.res { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 0; background: transparent; border-radius: 3px; padding: 8px; cursor: pointer; }
+.res[aria-selected="true"], .res:hover { background: var(--surface-2); }
+.res .ic { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.res .ic.place { border-radius: 2px; background: var(--faint); }
+.res .tx { min-width: 0; display: flex; flex-direction: column; }
+.res .tx b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.res .tx small { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.res .st { margin-left: auto; font-size: 11px; letter-spacing: .08em; color: var(--muted); flex: none; }
+.res .st.live { color: var(--live); }
+.noresult { padding: 10px; color: var(--muted); font-size: 13px; }
+
+/* Live strip + filters */
+.strip { display: flex; gap: 10px; align-items: center; padding-block: 8px; border-bottom: 1px solid rgb(93 61 38 / .6); overflow-x: auto; scrollbar-width: none; background: rgb(22 5 10 / .55); }
+.strip::-webkit-scrollbar { display: none; }
+.strip-label { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+.strip-label i { width: 8px; height: 8px; border-radius: 50%; background: var(--live); animation: beat 1.6s infinite; }
+@keyframes beat { 0% { box-shadow: 0 0 0 0 rgb(255 213 106 / .7); } 70% { box-shadow: 0 0 0 8px rgb(255 213 106 / 0); } 100% { box-shadow: 0 0 0 0 rgb(255 213 106 / 0); } }
+.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 13px; font-size: 13px; letter-spacing: .03em; cursor: pointer; white-space: nowrap; }
+.chip:hover { border-color: var(--gold); }
+.chip.live-chip { border-color: rgb(255 213 106 / .55); }
+.chip.live-chip small { color: var(--live); margin-left: 8px; letter-spacing: .06em; }
+.sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 7px; vertical-align: 1px; }
+.divider { width: 1px; align-self: stretch; background: var(--line); flex: none; }
+.empty { color: var(--faint); font-size: 13px; white-space: nowrap; }
+
+/* Map */
+.stage { position: relative; min-height: 0; overflow: hidden; background: var(--land); }
+#map { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+#map.dragging { cursor: grabbing; }
+.stage.picking #map { cursor: crosshair; }
+.r-out { fill: var(--road-out); fill-rule: evenodd; }
+.r-edge { stroke: var(--road-edge); stroke-linecap: round; stroke-linejoin: round; fill: none; opacity: .55; }
+.r-fill { stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.r-fill.minor { stroke: var(--road-in); }
+.r-fill.major { stroke: var(--road-per); }
+.r-fill.out { stroke: var(--road-out); }
+.campus { fill: var(--campus); stroke: none; }
+.bld { fill: #45241f; stroke: #6b4830; stroke-width: .9; fill-rule: evenodd; stroke-linejoin: round; }
+.vshape .vb { fill: #693824; stroke: #c99a45; stroke-width: 1.2; fill-rule: evenodd; stroke-linejoin: round; cursor: pointer; transition: fill .15s; }
+.vshape:hover .vb { fill: #84472b; stroke: var(--gold-hi); }
+.vshape.selected .vb { fill: #94512f; stroke: var(--gold-hi); stroke-width: 2.2; }
+.roads { pointer-events: none; }
+.campus-glow { fill: none; stroke: var(--gold); stroke-width: 56; stroke-linejoin: round; opacity: .06; }
+.dental-area { fill: var(--dental); }
+.plabel { font-family: var(--f-body); fill: var(--text); font-size: calc(13.5px * var(--fs, 1)); letter-spacing: .01em; pointer-events: none; paint-order: stroke; stroke: var(--campus); stroke-width: 3.5px; stroke-linejoin: round; }
+.pin { cursor: pointer; }
+.pin .hit { fill: transparent; stroke: none; }
+.pin .mk { fill: var(--gold); stroke: var(--ink); stroke-width: 1.6; }
+.pin .tail { fill: var(--gold); stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.pin .glyph { fill: var(--ink); font-family: var(--f-body); font-weight: 700; font-size: 15px; text-anchor: middle; pointer-events: none; }
+.pin .cap { fill: var(--ink); }
+.pin.metro .mk { fill: var(--route); }
+.pin.minor { display: none; }
+.zoomed .pin.minor, .pin.minor.selected { display: inline; }
+.pin.minor .dotmk { fill: var(--faint); stroke: var(--campus); stroke-width: 2; }
+.pin.minor .plabel { fill: var(--muted); font-size: calc(12px * var(--fs, 1)); }
+.pin.selected .mk, .pin.selected .tail { stroke: var(--gold-hi); stroke-width: 2.4; }
+.pin.minor.selected .dotmk { fill: var(--gold-hi); }
+.street { font-family: var(--f-body); font-size: calc(14px * var(--fs, 1)); font-weight: 500; letter-spacing: .03em; fill: var(--gold-hi); pointer-events: none; opacity: .8; text-anchor: middle; paint-order: stroke; stroke: var(--road-per); stroke-width: 0; }
+.bus { fill: var(--muted); opacity: .55; }
+.gate circle { fill: var(--ink); stroke: var(--route); stroke-width: 2.5; }
+.gate text { fill: var(--route); font-size: calc(12px * var(--fs, 1)); font-weight: 600; font-family: var(--f-body); letter-spacing: .04em; paint-order: stroke; stroke: var(--campus); stroke-width: 3px; }
+
+.dot { cursor: pointer; }
+.dot .hit { fill: transparent; }
+.dot .core { stroke: var(--ink); stroke-width: 2.5; }
+.dot .ring { fill: none; stroke-width: 2.5; transform-box: fill-box; transform-origin: center; opacity: 0; }
+.dot.live .core { fill: var(--live); }
+.dot.live .ring { stroke: var(--live); animation: resonate 2.2s cubic-bezier(.2,.6,.3,1) infinite; }
+.dot.live .ring.r2 { animation-delay: .73s; }
+.dot.live .ring.r3 { animation-delay: 1.46s; }
+@keyframes resonate { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(4.2); opacity: 0; } }
+.dot.soon .core { fill: var(--ink); stroke: var(--soon); stroke-width: 3.5; }
+.dot.later .core { fill: var(--idle); opacity: .75; }
+.dot.ended .core { fill: var(--ended); }
+.dot .halo { fill: none; stroke: transparent; stroke-width: 2; stroke-dasharray: 4 4; }
+.dot.selected .halo { stroke: var(--gold-hi); }
+.dot .tag { font-family: var(--f-body); font-size: calc(13px * var(--fs, 1)); font-weight: 600; letter-spacing: .02em; fill: var(--text); paint-order: stroke; stroke: var(--ink); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+.dot .tag { display: none; }
+.zoomed .dot.live .tag, .dot.selected .tag { display: inline; }
+
+.route-line { fill: none; stroke: var(--route); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2 11; animation: march 0.9s linear infinite; }
+.route-glow { fill: none; stroke: var(--gold); stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; opacity: .2; }
+@keyframes march { to { stroke-dashoffset: -13; } }
+.route-start { fill: var(--ink); stroke: var(--route); stroke-width: 4; }
+.route-start-label { font-family: var(--f-body); font-size: calc(12.5px * var(--fs, 1)); font-weight: 600; letter-spacing: .03em; fill: var(--route); paint-order: stroke; stroke: var(--ink); stroke-width: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dot.live .ring { animation: none; opacity: .5; transform: scale(2.2); }
+  .dot.live .ring.r2, .dot.live .ring.r3 { display: none; }
+  .route-line { animation: none; }
+  .strip-label i { animation: none; }
+}
+
+/* Floating map controls */
+.ctrls { position: absolute; z-index: 2; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.ctrls button { width: 36px; height: 36px; border-radius: 4px; border: 1px solid var(--gold-lo); background: rgb(35 10 14 / .92); color: var(--gold-hi); cursor: pointer; font-size: 18px; line-height: 1; display: grid; place-items: center; }
+.ctrls button:hover { background: var(--surface-2); border-color: var(--gold); }
+.fbtn { position: relative; }
+.fbtn.on::after { content: ""; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--soon); }
+.fpop { position: absolute; z-index: 4; left: max(60px, calc(env(safe-area-inset-left, 0px) + 56px)); top: 12px; width: min(250px, calc(100% - 80px)); background: rgb(35 10 14 / .96); border: 1px solid var(--gold-lo); border-radius: 4px; padding: 12px; display: grid; gap: 4px; box-shadow: 0 16px 36px rgb(0 0 0 / .55); }
+.fpop h4 { margin: 0 0 4px; font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+.fpop .row { display: flex; align-items: center; gap: 9px; border: 0; background: transparent; border-radius: 3px; padding: 7px 6px; cursor: pointer; text-align: left; font-size: 13.5px; }
+.fpop .row:hover { background: var(--surface-2); }
+.fpop .row[aria-pressed="false"] { opacity: .4; }
+.fpop .key { display: grid; gap: 6px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.fpop .key div { display: flex; align-items: center; gap: 8px; }
+.fpop .key i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.scale { position: absolute; z-index: 2; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); bottom: 12px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); pointer-events: none; text-shadow: 0 0 4px var(--ink); }
+.scale b { height: 6px; border: 1.5px solid var(--muted); border-top: 0; display: inline-block; }
+.toast { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); background: var(--gold-grad); color: #2a0d10; font-weight: 600; letter-spacing: .03em; padding: 9px 12px 9px 14px; border-radius: 4px; display: flex; gap: 10px; align-items: center; z-index: 4; box-shadow: 0 10px 30px rgb(0 0 0 / .5); max-width: calc(100% - 32px); }
+.toast button { border: 0; background: rgb(42 13 16 / .18); border-radius: 3px; padding: 3px 8px; cursor: pointer; color: #2a0d10; font-weight: 600; }
+
+/* Detail panel: double gold frame, like the poster border */
+#panel { position: absolute; top: 12px; right: max(12px, calc(env(safe-area-inset-right, 0px) + 12px)); bottom: 12px; width: min(380px, calc(100% - 24px));
+  background: linear-gradient(180deg, #321118 0%, var(--surface) 100%); border: 1px solid var(--gold-lo); border-radius: 4px; padding: 20px 20px 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 20px 50px rgb(0 0 0 / .6), inset 0 0 0 4px var(--surface), inset 0 0 0 5px rgb(217 172 71 / .32); z-index: 3; }
+#panel.enter { animation: slidein .28s cubic-bezier(.2,.8,.2,1); }
+@keyframes slidein { from { transform: translateX(24px); opacity: 0; } }
+.p-top { display: flex; align-items: center; gap: 10px; }
+.pill { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.live { background: rgb(255 213 106 / .16); color: var(--live); }
+.pill.soon { background: rgb(240 162 74 / .15); color: var(--soon); }
+.pill.later { background: rgb(184 151 90 / .15); color: var(--idle); }
+.pill.ended, .pill.place { background: var(--surface-2); color: var(--muted); }
+.countdown { font-size: 12px; letter-spacing: .06em; color: var(--muted); }
+.close { margin-left: auto; width: 32px; height: 32px; flex: none; border-radius: 4px; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: 18px; line-height: 1; }
+.close:hover { border-color: var(--gold); }
+#p-title { font-family: var(--f-display); font-weight: 600; font-size: 24px; line-height: 1.2; margin: 0; color: var(--gold-hi); text-wrap: balance; }
+.p-cat { font-size: 12px; color: var(--muted); letter-spacing: .18em; text-transform: uppercase; margin-top: -6px; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; font-size: 14px; }
+dt { color: var(--muted); font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; padding-top: 3px; }
+dd { margin: 0; min-width: 0; }
+.mono { font-family: var(--f-mono); font-size: 13.5px; letter-spacing: .04em; }
+.linkish { border: 0; background: none; padding: 0; color: var(--text); text-decoration: underline; text-decoration-color: var(--gold-lo); text-underline-offset: 3px; cursor: pointer; text-align: left; }
+.p-desc { margin: 0; color: #efd48c; line-height: 1.6; font-weight: 300; font-size: 14.5px; }
+.timeline { height: 5px; border-radius: 3px; background: var(--surface-2); position: relative; overflow: hidden; }
+.timeline b { position: absolute; inset: 0 auto 0 0; background: var(--gold-grad); border-radius: 3px; }
+.evlist { display: grid; gap: 4px; }
+.evlist button { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); background: transparent; border-radius: 4px; padding: 8px 10px; cursor: pointer; text-align: left; }
+.evlist button:hover { background: var(--surface-2); border-color: var(--gold-lo); }
+.evlist .mono { color: var(--muted); font-size: 12px; flex: none; }
+.evlist .nm { min-width: 0; flex: 1; }
+.navbox { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 10px; }
+.navbox h3 { margin: 0; font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { border: 1px solid var(--line); background: transparent; border-radius: 4px; padding: 6px 10px; font-size: 13px; letter-spacing: .03em; cursor: pointer; }
+.seg button:hover { border-color: var(--gold-lo); }
+.seg button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-hi); background: rgb(217 172 71 / .12); }
+.custom { display: grid; gap: 8px; padding: 10px; border: 1px dashed var(--line); border-radius: 4px; }
+.custom .combo input { padding-block: 8px; font-size: 13.5px; }
+.custom-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ghost { border: 1px solid var(--line); background: transparent; border-radius: 4px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
+.ghost:hover { border-color: var(--gold); }
+.from { font-size: 13px; color: var(--muted); }
+.from b { color: var(--text); font-weight: 500; }
+.walk { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.walk b { font-family: var(--f-display); font-weight: 600; font-size: 24px; color: var(--gold); }
+.walk span { color: var(--muted); font-size: 12.5px; letter-spacing: .06em; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; border-radius: 4px; padding: 12px 14px; font-weight: 600; font-size: 12.5px; letter-spacing: .16em; text-transform: uppercase; }
+.btn.primary { background: var(--gold-grad); color: #2a0d10; }
+.btn.primary:hover { filter: brightness(1.08); }
+.hint { font-size: 12px; color: var(--faint); margin: 0; line-height: 1.5; }
+
+/* Time bar */
+.timebar { display: flex; align-items: center; gap: 14px; padding-block: 12px; border-top: 1px solid var(--line); flex-wrap: wrap; background: rgb(22 5 10 / .6); }
+.days { display: flex; gap: 4px; }
+.days button { border: 1px solid var(--line); background: transparent; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+.days button:hover { border-color: var(--gold-lo); }
+.days button[aria-pressed="true"] { background: var(--gold-grad); color: #2a0d10; border-color: var(--gold); font-weight: 600; }
+.scrub { flex: 1; min-width: 180px; display: flex; align-items: center; gap: 10px; }
+.scrub input { flex: 1; accent-color: var(--gold); min-width: 0; }
+.scrub output { font-family: var(--f-display); font-weight: 600; font-size: 16px; letter-spacing: .06em; min-width: 52px; color: var(--gold-hi); }
+.nowbtn { border: 1px solid var(--gold-lo); background: var(--surface); border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; }
+.nowbtn:hover { border-color: var(--gold); }
+
+@media (min-width: 1280px) { .sub .long { display: inline; } .sub .short { display: none; } }
+@media (max-width: 900px) {
+  .gutter { padding-left: max(26px, env(safe-area-inset-left, 0px)); padding-right: max(26px, env(safe-area-inset-right, 0px)); }
+}
+@media (max-width: 720px) {
+  .gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  header { flex-wrap: wrap; gap: 10px; }
+  .search { order: 3; flex-basis: 100%; max-width: none; }
+  .clock { margin-left: auto; }
+  .clock b { font-size: 20px; }
+  #panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 68%; }
+  #panel.enter { animation-name: slideup; }
+  @keyframes slideup { from { transform: translateY(30px); opacity: 0; } }
+  .sub { letter-spacing: .18em; }
+}
+</style>
+
+<header class="gutter">
+  <div class="brand">
+    <h1 class="wordmark">PANACEA <span>2026</span></h1>
+    <div class="sub"><span class="long">BMCRI · Bengaluru · 15–17 December 2026</span><span class="short">BMCRI · 15–17 Dec 2026</span></div>
+  </div>
+  <div class="combo search" id="search">
+    <svg class="glass" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="var(--muted)" stroke-width="1.8"/><path d="M11 11l3.5 3.5" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <input id="q" type="search" placeholder="Search events or places" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="q-results" aria-label="Search events or places">
+    <div class="results" id="q-results" role="listbox" hidden></div>
+  </div>
+  <div class="clock" aria-live="polite"><b id="clock-time">14:30</b><span id="clock-day">Day 1</span></div>
+</header>
+
+<div class="strip gutter" id="strip"></div>
+
+<div class="stage" id="stage">
+  <svg id="map" role="application" aria-label="Victoria Hospital campus map with fest events" preserveAspectRatio="xMidYMid slice"></svg>
+  <div class="ctrls">
+    <button id="zin" aria-label="Zoom in">+</button>
+    <button id="zout" aria-label="Zoom out">−</button>
+    <button id="zfit" aria-label="Fit map to screen">⤢</button>
+    <button id="fbtn" class="fbtn" aria-label="Filter events" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12l-4.6 5.4V13l-2.8-1.6V8.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+  </div>
+  <div class="fpop" id="fpop" hidden></div>
+  <div class="scale"><b id="scalebar" style="width:60px"></b><span>50 m</span></div>
+  <div class="toast" id="toast" hidden><span>Tap anywhere on the map to set your starting point</span><button id="toast-cancel">Cancel</button></div>
+  <aside id="panel" hidden aria-labelledby="p-title"></aside>
+</div>
+
+<div class="timebar gutter">
+  <div class="days" id="days"></div>
+  <div class="scrub">
+    <input type="range" id="t" min="480" max="1380" step="5" value="870" aria-label="Time of day">
+    <output id="t-out" for="t">14:30</output>
+  </div>
+  <button class="nowbtn" id="nowbtn">Jump to now</button>
+</div>
+
+<script>
+/* =====================================================================
+   EDIT HERE: fest dates, places and events.
+   Roads and the campus outline are traced from the Google Maps view; pins sit at real GPS coordinates (map centre 12.9623877, 77.5747331; 1 map unit = 0.412 m). `ll` is the real [lat, lng] of a place.
+   `q` is what Google Maps searches for when opening directions.
+   ===================================================================== */
+const FEST = {
+  dates: ["2026-12-15", "2026-12-16", "2026-12-17"],   // 15th to 17th December 2026
+  dayNames: ["Day 1", "Day 2", "Day 3"],
+};
+const M_PER_UNIT = 0.412;   // metres per map unit, fitted to real coordinates
+const CENTRE = { lat: 12.9623877, lng: 77.5747331 };   // the map is centred here
+const WALK_M_PER_MIN = 75;
+
+const CATEGORIES = {
+  cultural: { name: "Cultural", color: "#FF8A5B" },
+  academic: { name: "Academic", color: "#7CB7FF" },
+  literary: { name: "Literary", color: "#C59BFF" },
+  food:     { name: "Food & Fun", color: "#F5B841" },
+  outreach: { name: "Outreach", color: "#FF6FAE" },
+  sports:   { name: "Sports", color: "#5BD38A" },
+};
+
+const PLACES = [
+  {"id": "victoria", "name": "Victoria Hospital", "lines": ["Victoria Hospital"], "side": "r", "q": "Victoria Hospital, Bengaluru", "kind": "gm", "point": [1093, 178], "ll": [12.9643083, 77.5754198]},
+  {"id": "newopd", "name": "New Opd Block, Victoria Hospital", "lines": ["New Opd Block,", "Victoria Hospital"], "side": "l", "q": "New OPD Block, Victoria Hospital, Bengaluru", "kind": "gm", "point": [732, 508], "ll": [12.9630768, 77.5740475]},
+  {"id": "gastro", "name": "Institute of Gastroenterology", "lines": ["Institute of", "Gastroenterology"], "side": "l", "q": "Institute of Gastroenterology Sciences and Organ Transplant, Bengaluru", "kind": "gm", "point": [1190, 695], "ll": [12.9623785, 77.5757866]},
+  {"id": "metro", "name": "Krishna Rajendra Market Metro Station", "lines": ["Krishna Rajendra Market", "Metro Station"], "side": "l", "q": "Krishna Rajendra Market metro station, Bengaluru", "kind": "metro", "point": [932, 1188], "ll": [12.9605415, 77.5748095]},
+  {"id": "main", "name": "Bangalore Medical College and Research Institute", "lines": ["Bangalore Medical College", "and Research Institute"], "side": "r", "q": "Bangalore Medical College and Research Institute, Bengaluru", "kind": "bmcri", "point": [911, 1426], "ll": [12.9594139, 77.5747245]},
+  {"id": "dental", "name": "Government Dental College & Hospital", "q": "Government Dental College and Hospital, Bengaluru", "kind": "minor", "point": [1175, 358], "ll": [12.9636378, 77.5757323]},
+  {"id": "fort", "name": "Bengaluru Fort", "q": "Bangalore Fort, Bengaluru", "kind": "minor", "point": [1214, 566], "ll": [12.9628624, 77.5758808]},
+  {"id": "infosys", "name": "Infosys Laboratory", "q": "Infosys Laboratory, Victoria Hospital, Bengaluru", "kind": "minor", "point": [914, 654], "ll": [12.9625345, 77.5747403]},
+  {"id": "pathmicro", "name": "Department of Microbiology", "q": "Department of Microbiology BMCRI, Bengaluru", "kind": "minor", "point": [864, 694], "ll": [12.9623832, 77.5745481]},
+  {"id": "virus", "name": "State Level Virus Research & Diagnostic Lab", "kind": "minor", "point": [965, 719], "ll": [12.9622919, 77.5749321]},
+  {"id": "trauma", "name": "Trauma & Emergency Care Centre", "q": "Trauma and Emergency Care Centre, Victoria Hospital, Bengaluru", "kind": "minor", "point": [625, 639], "ll": [12.9625885, 77.5736435]},
+  {"id": "pmssy", "name": "BMCRI Super Speciality Hospital / PMSSY", "kind": "minor", "point": [490, 673], "ll": [12.962463, 77.57313]},
+  {"id": "nephro", "name": "Institute of Nephro Urology", "q": "Institute of Nephro Urology, Bengaluru", "kind": "minor", "point": [402, 817], "ll": [12.9619257, 77.5727951]},
+  {"id": "vanivilas", "name": "Vanivilas Hospital", "q": "Vani Vilas Hospital, Bengaluru", "kind": "minor", "point": [722, 945], "ll": [12.9614476, 77.5740092]},
+  {"id": "vvhfood", "name": "VVH Food Court", "kind": "minor", "point": [711, 880], "ll": [12.9616909, 77.5739686]},
+  {"id": "sbiatm", "name": "SBI ATM", "kind": "minor", "point": [490, 828], "ll": [12.9618851, 77.5731281]},
+  {"id": "minto", "name": "Minto Hospital", "kind": "minor", "point": [499, 972], "ll": [12.9613481, 77.5731623]},
+  {"id": "mintoregional", "name": "Minto Ophthalmic Hospital - Regional", "q": "Minto Regional Institute of Ophthalmology, Bengaluru", "kind": "minor", "point": [397, 1026], "ll": [12.9611488, 77.5727761]},
+  {"id": "redcross", "name": "Red Cross Opticals", "kind": "minor", "point": [268, 1109], "ll": [12.9608392, 77.5722884]},
+  {"id": "watertank", "name": "Water Tank", "kind": "minor", "point": [274, 833], "ll": [12.9618675, 77.5723105]},
+  {"id": "hostel", "name": "BMCRI Ladies Hostel", "kind": "minor", "point": [633, 1119], "ll": [12.9608004, 77.5736735]},
+  {"id": "vishranti", "name": "Vishranti Dhama", "kind": "minor", "point": [452, 554], "ll": [12.9629049, 77.5729865]}
+];
+
+// Preset starting points shown on every event.
+const STARTS = [
+  {"id": "north", "name": "North Gate", "at": [569, 151]},
+  {"id": "krgate", "name": "K.R. Road Gate", "at": [1266, 678], "ll": [12.9624416, 77.5759492]},
+  {"id": "metro", "name": "K.R. Market Metro", "place": "metro"}
+];
+
+// Sample events. day: 0-based index into FEST.dates. Times are 24h "HH:MM".
+const EVENTS = [
+  { id: "e1",  title: "Inauguration Ceremony", cat: "cultural", venue: "main", day: 0, start: "10:00", end: "11:30", org: "Fest Committee", desc: "Lamp lighting, chief guest address and the official launch of PANACEA 2026." },
+  { id: "e2",  title: "Differential Diagnosis Quiz · Prelims", cat: "academic", venue: "pathmicro", day: 0, start: "11:00", end: "13:00", org: "Quiz Club", desc: "Written prelims for teams of two. Top six teams go to the finals on Day 2." },
+  { id: "e3",  title: "Heritage Walk: Bengaluru Fort", cat: "outreach", venue: "fort", day: 0, start: "13:30", end: "15:30", org: "History Circle", desc: "A guided walk through Tipu Sultan's fort, two minutes from Victoria Hospital." },
+  { id: "e4",  title: "Street Food Carnival", cat: "food", venue: "hostel", day: 0, start: "12:00", end: "22:00", org: "Hospitality Team", desc: "Twenty stalls on the hostel grounds, from darshini classics to dessert counters." },
+  { id: "e5",  title: "Clinical Case Presentation", cat: "academic", venue: "newopd", day: 0, start: "14:00", end: "16:00", org: "Dept. of Medicine", desc: "Undergraduate case presentations judged by faculty. Seminar hall, top floor." },
+  { id: "e6",  title: "Group Dance · Prelims", cat: "cultural", venue: "main", day: 0, start: "14:00", end: "17:30", org: "Dance Club", desc: "Eight-minute slots per team. Audience entry closes when the hall is full." },
+  { id: "e7",  title: "Blood Donation Camp", cat: "outreach", venue: "victoria", day: 0, start: "09:00", end: "16:00", org: "NSS Unit", desc: "Walk-in donors welcome. Carry a photo ID and eat a light meal beforehand." },
+  { id: "e8",  title: "Poetry Slam", cat: "literary", venue: "vishranti", day: 0, start: "15:00", end: "16:30", org: "Literary Society", desc: "Three minutes, one mic, no props. English, Kannada and Hindi entries." },
+  { id: "e9",  title: "Henna & Face Painting", cat: "food", venue: "mintoregional", day: 0, start: "13:00", end: "17:00", org: "Nursing Student Council", desc: "Drop-in stalls on the lawn." },
+  { id: "e10", title: "Science Model Expo", cat: "academic", venue: "infosys", day: 0, start: "10:00", end: "15:00", org: "Research Cell", desc: "Working models and research posters by first and second years." },
+  { id: "e11", title: "Debate: AI in the Clinic", cat: "literary", venue: "dental", day: 0, start: "16:30", end: "18:00", org: "Debate Society", desc: "Oxford-style debate. Audience votes before and after." },
+  { id: "e12", title: "Treasure Hunt", cat: "food", venue: "nephro", day: 0, start: "15:30", end: "17:30", org: "Hostel Committee", desc: "Clues hidden across the campus. Teams of four register at the start point." },
+  { id: "e13", title: "Battle of the Bands", cat: "cultural", venue: "main", day: 0, start: "18:00", end: "21:30", org: "Music Club", desc: "Six college bands, twenty minutes each. Headliner set at 21:00." },
+  { id: "e14", title: "Health Awareness Walk", cat: "outreach", venue: "vanivilas", day: 1, start: "08:00", end: "09:30", org: "Community Medicine", desc: "Starts at Vani Vilas Hospital and loops the campus." },
+  { id: "e15", title: "Quiz Finals", cat: "academic", venue: "main", day: 1, start: "11:00", end: "13:00", org: "Quiz Club", desc: "Six teams, buzzer rounds, live audience." },
+  { id: "e16", title: "Fun Run", cat: "sports", venue: "fort", day: 1, start: "07:00", end: "08:30", org: "Sports Council", desc: "A 3 km loop around the fort and Victoria campus." },
+  { id: "e17", title: "Fashion Show", cat: "cultural", venue: "main", day: 1, start: "18:30", end: "21:00", org: "Fashion Team", desc: "Theme: Anatomy of Style." },
+  { id: "e18", title: "Research Poster Expo", cat: "academic", venue: "gastro", day: 2, start: "10:00", end: "14:00", org: "Research Cell", desc: "Undergraduate and PG posters with open judging." },
+  { id: "e19", title: "Pro Night", cat: "cultural", venue: "main", day: 2, start: "19:00", end: "22:30", org: "Fest Committee", desc: "Closing night concert. Passes checked at the North Gate." },
+  { id: "e20", title: "Eye Screening Camp", cat: "outreach", venue: "minto", day: 2, start: "09:00", end: "13:00", org: "Dept. of Ophthalmology", desc: "Free vision screening for visitors and staff." },
+];
+
+/* ---------- Map data, traced from the Google Maps view of the campus ---------- */
+// kind: major (campus boundary road), minor (campus roads), out (streets outside the campus)
+const ROADS = [
+  {"kind": "major", "pts": [[130.5,185.8],[313.1,172.2],[521.9,156.6],[730.6,131.5],[939.3,104.4],[1043.7,96.0],[1148.1,104.4],[1252.4,135.7],[1356.8,172.2],[1461.2,224.4],[1480.0,266.1],[1456.0,313.1],[1409.0,417.5],[1356.8,521.9],[1304.6,605.3],[1247.2,720.2],[1189.8,772.3],[1127.2,819.3],[1080.2,866.3],[1033.3,960.2],[991.5,1054.1],[949.8,1137.6],[918.5,1221.1],[887.1,1294.2],[861.1,1367.2],[835.0,1424.7],[730.6,1395.4],[584.5,1353.7],[448.8,1306.7],[313.1,1255.6],[208.7,1207.6],[146.1,1166.9],[133.6,1095.9],[127.3,939.3],[122.1,730.6],[123.2,521.9],[125.2,313.1],[130.5,185.8]]},
+  {"kind": "minor", "pts": [[250.2,173.9],[253.6,313.1],[255.7,521.9],[256.8,782.8]]},
+  {"kind": "minor", "pts": [[120.1,540.7],[258.8,535.3]]},
+  {"kind": "minor", "pts": [[119.2,718.2],[259.5,713.8]]},
+  {"kind": "minor", "pts": [[405.0,162.3],[409.1,214.0],[388.3,266.1],[370.5,302.7],[375.7,370.5],[386.2,438.4],[422.7,501.0],[459.2,542.7],[501.0,615.8],[521.9,668.0],[579.3,749.4],[631.4,812.0]]},
+  {"kind": "minor", "pts": [[562.6,148.7],[574.0,224.4],[615.8,276.6],[673.2,297.5],[699.3,349.6],[734.1,413.8]]},
+  {"kind": "minor", "pts": [[729.7,411.7],[767.1,405.0],[798.9,378.5]]},
+  {"kind": "minor", "pts": [[672.3,300.3],[682.6,269.3],[701.4,262.2],[726.4,263.0],[751.5,271.4],[784.9,300.6],[792.9,311.3]]},
+  {"kind": "minor", "pts": [[791.6,305.9],[786.9,334.0],[791.1,367.4],[801.6,392.4],[816.2,438.4],[824.5,480.1],[830.8,521.9],[835.0,551.1],[840.2,564.3]]},
+  {"kind": "minor", "pts": [[748.3,272.7],[843.3,217.1],[935.2,169.1],[1033.1,124.9]]},
+  {"kind": "minor", "pts": [[789.0,307.4],[872.5,258.8],[943.5,221.3],[1021.4,184.5]]},
+  {"kind": "minor", "pts": [[791.3,375.6],[876.7,329.8],[951.9,288.1],[1026.8,248.4]]},
+  {"kind": "minor", "pts": [[814.8,446.2],[901.8,400.8],[968.6,363.2],[1034.4,318.9]]},
+  {"kind": "minor", "pts": [[840.7,215.1],[868.4,256.8],[880.9,288.1],[901.8,321.5],[914.3,359.0],[923.3,392.0]]},
+  {"kind": "minor", "pts": [[1033.1,122.5],[1018.7,167.0],[1018.7,208.7],[1027.0,271.4],[1033.3,334.0],[1037.4,396.6],[1043.7,459.2],[1043.7,501.0],[1039.5,542.7],[1027.0,584.5],[1016.6,622.0],[991.5,720.2],[949.8,824.5],[908.0,897.6],[876.7,991.5],[845.4,1095.9],[822.4,1118.9]]},
+  {"kind": "minor", "pts": [[841.6,559.8],[805.7,584.5],[764.0,622.0],[720.2,659.6],[647.1,705.5],[579.3,749.4],[501.0,808.9],[438.4,861.1],[422.7,897.6],[438.4,960.2],[490.5,1028.0],[563.6,1056.2],[668.0,1085.4],[751.5,1101.1],[819.3,1116.8],[871.5,1116.8],[918.5,1132.4],[951.2,1142.3]]},
+  {"kind": "minor", "pts": [[837.2,561.8],[876.7,584.5],[918.5,603.3],[955.0,615.8],[1017.6,632.5],[1037.9,601.0]]},
+  {"kind": "minor", "pts": [[1033.2,603.2],[1095.9,615.8],[1148.1,647.1],[1210.7,688.8],[1247.7,723.8]]},
+  {"kind": "minor", "pts": [[810.8,834.1],[866.3,866.3],[908.0,897.6],[970.6,923.7],[1036.8,960.0]]},
+  {"kind": "minor", "pts": [[910.1,755.6],[840.2,735.8],[824.5,756.7],[812.0,845.4],[780.7,918.5],[746.2,991.5],[730.6,1038.5],[743.1,1059.4],[824.5,1090.7],[835.4,1110.0]]},
+  {"kind": "minor", "pts": [[1221.1,238.0],[1184.6,313.1],[1146.0,401.8]]},
+  {"kind": "minor", "pts": [[216.2,1134.5],[292.2,1160.6],[349.6,1184.6]]},
+  {"kind": "minor", "pts": [[172.2,970.6],[175.4,1082.2]]},
+  {"kind": "minor", "pts": [[228.6,1113.6],[224.1,1130.3],[211.9,1142.6],[195.2,1147.0],[178.5,1142.6],[166.2,1130.3],[161.8,1113.6],[166.2,1096.9],[178.5,1084.7],[195.2,1080.2],[211.9,1084.7],[224.1,1096.9],[228.6,1113.6]]},
+  {"kind": "minor", "pts": [[172.6,1077.9],[182.6,1086.1]]},
+  {"kind": "minor", "pts": [[171.8,1131.8],[141.0,1153.7]]},
+  {"kind": "out", "pts": [[375.7,-20.9],[377.2,170.4]]},
+  {"kind": "out", "pts": [[527.1,-20.9],[532.2,158.4]]},
+  {"kind": "out", "pts": [[676.3,-20.9],[683.9,140.1]]},
+  {"kind": "out", "pts": [[774.4,-20.9],[781.5,127.9]]}
+];
+const CAMPUS = "130.5,185.8 313.1,172.2 521.9,156.6 730.6,131.5 939.3,104.4 1043.7,96.0 1148.1,104.4 1252.4,135.7 1356.8,172.2 1461.2,224.4 1480.0,266.1 1456.0,313.1 1409.0,417.5 1356.8,521.9 1304.6,605.3 1247.2,720.2 1189.8,772.3 1127.2,819.3 1080.2,866.3 1033.3,960.2 991.5,1054.1 949.8,1137.6 918.5,1221.1 887.1,1294.2 861.1,1367.2 835.0,1424.7 730.6,1395.4 584.5,1353.7 448.8,1306.7 313.1,1255.6 208.7,1207.6 146.1,1166.9 133.6,1095.9 127.3,939.3 122.1,730.6 123.2,521.9 125.2,313.1";        // highlighted campus outline
+const DENTAL_AREA = "1043.7,146.1 1304.6,214.0 1429.9,273.4 1398.6,427.9 1317.1,490.5 1153.3,454.0 1043.7,490.5";   // tinted block (Govt. Dental College)
+const BUS_STOPS = [[890, 54], [1075, 850], [637, 1342]];   // as shown in the reference map
+const BUILDINGS_D = "M406.5,1082.5L391.5,1091.5L391.5,1093.5L398.5,1103.0L397.0,1107.5L392.5,1109.5L362.0,1131.5L359.0,1132.5L355.5,1129.5L352.5,1130.0L338.0,1140.5L352.5,1163.5L365.0,1180.0L366.0,1183.0L369.5,1186.0L383.0,1177.0L382.0,1173.0L368.5,1154.0L370.5,1150.5L380.5,1143.5L384.5,1143.0L399.0,1162.5L412.0,1154.0L412.0,1152.0L399.5,1133.0L400.0,1130.5L406.0,1126.0L410.5,1124.0L413.0,1124.5L432.5,1152.5L447.0,1143.0L447.0,1140.5ZM133.5,1016.0L132.0,1017.0L132.0,1027.0L126.5,1028.0L125.0,1029.5L125.0,1061.5L139.0,1064.5L140.0,1064.0L139.5,1016.5ZM288.0,968.0L283.5,969.5L278.5,974.5L269.0,980.5L260.0,988.5L200.5,1033.0L200.5,1035.0L205.5,1042.5L210.5,1047.5L225.5,1067.5L226.5,1070.5L242.5,1090.0L254.5,1108.0L258.5,1110.0L266.0,1109.5L268.5,1111.0L268.0,1125.0L275.0,1133.5L289.5,1124.0L290.5,1119.5L298.5,1117.0L313.5,1105.0L320.0,1103.0L320.5,1100.5L362.0,1069.0L362.0,1066.5L341.0,1039.5L340.5,1036.5L339.5,1036.0L336.0,1038.5L334.0,1037.5L333.5,1028.5L326.5,1019.5L321.5,1017.5L321.0,1011.5L313.0,1002.5L310.0,996.5ZM278.0,1006.0L281.5,1007.5L283.5,1010.5L289.5,1012.0L294.0,1015.0L295.5,1019.0L293.0,1022.5L298.0,1029.0L298.5,1032.0L300.5,1033.5L308.5,1034.5L308.0,1042.5L325.5,1065.0L325.0,1067.5L285.0,1098.0L280.5,1095.5L237.0,1039.0L238.0,1036.0ZM186.0,946.0L168.5,958.0L168.5,961.5L174.5,968.5L174.5,972.0L180.0,979.5L188.5,978.5L211.5,1006.5L214.5,1007.0L226.0,999.0L226.5,997.0L204.0,966.0L205.0,962.5L208.5,960.0L206.5,955.5L203.5,953.0L196.5,955.5L194.5,955.0L190.0,948.0ZM234.0,880.5L219.0,890.5L218.0,899.5L212.0,904.0L211.5,906.0L217.5,913.0L220.0,920.0L225.5,926.0L231.0,935.0L233.0,936.0L247.5,955.0L250.0,959.5L250.0,963.0L252.5,966.5L257.0,969.0L285.0,948.5L286.0,945.5L281.0,938.0L277.0,937.0L243.0,890.5ZM940.0,871.0L937.5,886.5L948.5,888.5L954.5,888.0L955.5,873.0L948.0,871.0ZM316.0,869.5L314.5,871.0L315.0,874.0L331.0,899.5L334.0,901.5L344.0,895.0L347.0,895.0L348.0,897.5L344.5,900.5L344.0,903.5L350.5,913.0L356.5,914.0L356.0,920.0L368.5,929.5L372.5,929.5L387.0,911.5L387.5,908.5L376.5,899.5L376.0,897.0L378.5,893.5L372.0,884.0L370.5,883.5L365.0,887.0L362.0,887.0L356.5,875.5L343.0,855.0L339.5,855.0L321.0,867.5ZM212.5,848.5L209.5,849.0L195.5,857.0L193.5,856.5L188.5,849.5L186.5,849.0L176.0,857.0L168.0,858.0L148.0,874.0L159.5,891.5L157.0,896.0L157.5,899.0L162.5,903.5L168.0,903.0L181.5,919.0L186.5,917.0L207.0,902.0L199.5,889.5L201.5,886.0L207.5,882.0L210.0,883.0L212.5,886.5L215.0,887.0L230.5,875.0L229.5,871.0L221.5,859.0ZM736.5,802.5L728.0,826.0L727.5,836.5L732.0,837.0L735.5,833.5L738.0,833.0L745.5,840.5L766.5,847.0L769.0,842.5L775.5,820.0L746.0,809.5L745.5,805.0L739.0,802.0ZM136.0,806.0L137.5,807.5L183.5,806.0L183.5,801.0L186.0,799.0L240.5,796.0L241.0,786.0L138.0,785.5L136.5,786.5ZM323.0,783.5L312.0,791.0L305.0,794.0L303.5,797.0L312.5,809.5L316.5,808.0L320.0,809.0L330.5,824.5L344.0,816.0L344.0,814.0L336.5,805.5L335.0,800.0L326.0,786.0ZM839.5,768.0L818.0,823.0L813.5,831.5L810.5,842.0L845.5,856.0L847.5,861.0L850.0,862.5L858.0,863.5L873.0,862.5L876.5,864.0L877.5,868.0L897.5,876.5L900.0,876.0L903.5,866.0L907.0,862.0L906.5,858.5L913.0,842.0L917.5,839.5L922.0,828.5L920.5,823.0L933.5,792.5L935.5,785.0L918.0,778.0L914.5,782.5L907.5,782.0L904.5,790.5L901.5,792.0L841.0,767.5ZM853.5,798.0L855.5,797.5L895.5,814.0L895.5,819.0L885.0,843.5L878.5,843.0L842.5,828.0L842.0,825.0ZM543.0,763.0L536.5,759.5L532.5,761.5L528.5,766.0L521.0,769.0L521.5,773.0L520.5,774.5L516.0,775.0L513.0,777.0L509.5,776.5L492.0,788.0L502.5,804.0L504.5,804.0L549.5,774.0ZM771.0,736.5L769.0,740.0L769.0,755.0L763.0,765.0L757.0,768.5L755.5,776.5L751.0,785.5L747.0,798.0L797.0,818.5L818.0,769.0L823.5,753.0L792.0,742.0ZM710.5,716.5L704.0,721.5L698.0,740.5L693.0,750.0L680.0,783.0L680.5,790.5L679.0,795.5L687.5,799.0L689.0,793.0L692.5,792.5L701.0,796.5L703.0,803.0L705.5,802.5L718.0,770.5L722.0,770.5L724.0,773.0L738.0,779.0L741.0,778.0L740.5,771.5L743.5,768.5L746.0,762.0L750.5,759.0L750.0,755.0L755.0,745.5L755.5,737.5L747.5,737.0L746.0,733.0L728.0,726.0L726.0,722.5L717.5,722.0ZM376.5,654.5L349.0,670.5L362.5,695.0L370.0,702.0L371.0,709.0L373.0,710.0L378.5,707.0L379.5,705.0L384.0,704.0L387.0,700.5L393.5,700.0L394.5,697.5L400.0,694.0L381.5,660.5ZM827.5,608.5L800.0,674.5L800.0,678.5L797.0,681.0L796.0,686.0L797.5,691.0L794.5,694.0L794.5,697.0L791.5,703.5L792.0,706.5L788.0,709.0L788.0,711.5L794.0,712.5L795.0,714.5L836.0,731.5L896.5,752.5L900.5,749.5L927.0,759.0L927.5,762.0L925.0,770.0L933.5,772.0L936.5,763.0L939.0,762.5L942.0,764.0L945.0,763.0L952.0,747.0L960.5,747.0L967.5,731.0L967.0,725.5L961.5,722.0L961.0,718.0L963.0,715.0L968.0,713.5L967.5,708.5L970.0,703.5L961.5,703.0L960.0,699.0L968.5,677.0L971.0,673.5L975.5,659.0L970.0,656.5L968.0,659.5L965.0,660.0L924.5,644.5L913.5,637.0L908.5,638.0L893.5,636.0L891.5,635.0L890.5,631.5L885.0,627.5L880.5,629.0L872.0,624.5L866.5,625.0L865.0,622.0L862.0,622.0L862.0,627.5L858.5,631.5L852.5,649.0L932.5,679.5L936.0,682.0L934.5,688.5L932.0,690.5L916.5,685.5L911.5,691.0L908.5,691.0L905.0,687.5L904.0,680.0L842.5,655.5L842.0,635.5L849.5,614.0L832.0,608.5ZM863.0,621.5L866.5,625.0L872.0,624.5L881.0,629.5L883.5,628.0L886.0,628.5L890.5,631.5L892.0,635.5L897.0,637.0L906.5,637.0L909.0,638.5L913.5,637.0L924.5,644.5L939.5,650.5L942.5,650.5L963.5,659.5L968.5,660.0L970.0,656.5L975.5,659.5L971.0,673.5L968.5,677.0L960.0,699.0L961.5,703.0L963.5,704.0L969.0,703.0L970.0,704.0L967.5,708.5L968.0,713.0L963.0,715.0L961.0,718.0L961.5,722.0L967.0,726.0L967.5,731.0L962.0,741.5L961.0,746.0L959.5,747.5L956.0,746.0L952.0,747.0L948.0,754.0L948.5,755.5L945.0,763.0L942.0,764.0L936.0,762.5L932.5,772.5L925.0,769.5L927.5,762.0L926.5,758.5L915.0,755.0L912.5,753.0L931.0,752.5L932.5,753.5L933.5,757.5L941.0,757.5L942.0,756.5L941.5,702.0L938.0,698.5L927.0,699.0L919.5,696.5L917.5,694.0L919.5,690.5L931.5,691.0L935.0,688.0L936.0,680.5L927.5,678.5L856.5,649.5L853.5,649.5L852.5,646.5L857.0,638.0L859.0,630.5L862.5,627.0L861.5,625.0ZM828.5,608.0L849.5,614.5L842.0,634.0L842.0,654.5L843.0,656.0L904.0,680.0L904.5,687.0L908.5,691.0L911.5,691.0L916.5,685.5L928.5,689.0L930.5,690.5L919.5,690.5L917.5,694.0L919.5,696.5L927.0,699.0L938.0,698.5L941.5,702.0L941.5,743.5L942.5,744.5L941.5,746.0L942.0,756.5L941.0,757.5L933.5,757.5L933.0,754.5L931.0,752.5L910.5,753.0L900.5,749.5L896.5,752.5L890.5,751.0L879.5,746.0L878.0,746.5L836.0,731.5L796.0,715.0L794.0,712.5L790.0,712.5L788.0,711.0L788.0,709.5L792.5,706.0L791.5,703.5L795.0,696.5L794.5,694.0L797.5,691.0L796.0,686.0L796.5,682.5L800.5,678.0L800.0,674.5L814.0,643.0L813.5,641.5L823.0,620.5L823.5,617.0ZM434.5,582.5L379.5,617.5L378.0,620.5L379.5,627.0L376.0,632.5L383.5,645.0L389.0,650.0L393.0,661.0L397.0,663.5L402.5,674.5L431.0,718.0L470.0,781.0L473.0,783.5L483.0,778.0L483.0,776.0L478.5,774.0L479.0,770.5L486.0,770.5L488.5,773.0L491.0,773.5L499.5,768.0L498.5,766.5L494.5,766.0L495.0,762.5L498.5,761.5L502.5,764.5L509.5,763.0L515.0,759.5L514.0,754.0L515.0,751.0L518.5,751.0L520.5,754.0L526.5,753.5L528.5,751.0L538.0,746.5L538.0,743.5L492.0,672.5L489.0,663.0L483.5,658.5L477.5,650.5L477.0,647.5L472.0,641.0L471.5,638.5L467.5,636.0L465.5,629.5L437.0,584.5ZM339.0,581.5L308.0,582.5L308.0,691.5L309.0,692.0L322.0,686.0L320.5,680.5L321.5,678.0L341.0,677.0L343.0,672.5L342.0,655.5L339.5,653.0L339.0,640.5L342.0,638.0L353.0,638.0L353.0,617.5L351.5,616.5L347.5,617.0L345.0,615.0L345.5,606.0L341.5,603.0L341.5,590.5L340.0,588.5L342.0,584.0ZM1371.5,547.0L1366.5,561.5L1382.5,568.5L1386.0,568.5L1391.5,554.0L1374.0,546.5ZM308.0,538.0L308.0,568.5L329.0,570.0L345.5,569.5L346.5,538.0ZM1225.0,405.5L1225.5,410.5L1227.0,410.0L1265.0,427.5L1267.5,426.0L1274.0,413.0L1273.5,409.0L1265.0,405.0ZM1225.0,407.0L1227.5,405.0L1265.5,405.5L1271.5,408.0L1273.5,410.0L1274.0,413.0L1267.5,426.0L1265.0,427.5L1226.0,410.0ZM999.0,376.5L995.0,376.0L985.0,382.0L967.0,388.5L897.0,425.0L897.0,427.5L899.0,429.0L900.5,434.5L915.5,462.5L920.5,463.0L925.0,459.5L941.5,452.5L948.5,454.0L962.0,447.5L971.0,442.0L966.5,433.5L967.5,430.5L974.0,427.5L978.5,427.0L995.0,418.0L1000.0,418.0L1005.5,428.5L1020.5,421.5L1019.0,415.5L1007.0,394.0L1005.0,387.5L999.5,379.5ZM499.5,325.0L480.0,335.5L480.0,437.5L481.0,438.0L510.0,422.5L512.0,423.5L523.5,446.5L521.0,449.0L499.0,461.0L489.0,465.0L485.0,468.0L480.0,469.0L480.0,535.5L479.0,537.0L474.0,538.0L474.0,539.5L509.0,605.5L511.0,606.0L529.0,596.5L528.0,595.0L524.0,594.5L523.0,590.0L524.0,587.5L527.5,587.0L536.5,591.0L542.0,589.5L620.0,549.0L620.0,545.5L616.5,542.0L615.0,529.5L625.0,523.5L625.0,512.0L620.0,500.0L609.5,495.0L608.0,492.0L608.0,485.5L604.0,485.0L596.5,489.0L592.5,489.0L589.5,485.5L588.5,476.5L584.0,474.0L579.5,473.5L576.5,469.5L577.5,451.5L573.5,449.0L572.0,446.0L566.0,441.0L565.5,437.0L548.5,406.5L549.5,403.0L558.0,398.5L558.0,395.0L553.0,384.5L548.5,378.5L542.0,364.5L540.5,364.0L528.0,370.0L524.5,368.5L502.5,326.0ZM533.5,462.0L539.0,469.5L539.5,472.5L546.0,483.0L547.0,487.5L551.0,492.5L552.5,498.5L550.0,501.0L513.0,520.0L510.0,519.5L499.5,502.5L491.5,483.5L493.5,481.0L525.0,464.0ZM1081.5,320.0L1079.0,322.5L1078.5,326.5L1072.5,332.5L1075.5,342.0L1069.5,354.5L1070.5,381.5L1076.5,382.0L1079.0,384.0L1078.0,387.5L1073.5,388.0L1072.5,450.0L1074.5,450.0L1075.5,447.5L1074.5,399.5L1077.0,397.5L1080.0,400.5L1079.5,447.5L1080.5,455.0L1076.0,457.5L1076.0,460.5L1079.5,461.5L1081.5,464.5L1082.0,478.5L1094.5,479.5L1099.5,477.5L1101.5,478.5L1102.0,480.5L1104.5,481.0L1105.5,480.5L1104.5,476.0L1101.0,476.0L1098.5,474.0L1098.0,469.5L1099.5,466.0L1121.0,465.5L1121.5,406.0L1124.0,404.0L1140.0,403.5L1140.0,401.5L1136.5,399.0L1137.5,392.5L1137.0,362.0L1140.0,354.5L1135.0,346.5L1127.0,341.5L1126.5,336.5L1123.5,334.0L1123.0,330.0L1118.5,330.5L1118.0,333.0L1115.0,334.5L1106.5,334.0L1103.5,335.0L1101.5,334.0L1101.0,330.0L1099.0,327.0L1089.0,322.0ZM535.5,304.5L525.0,309.5L525.0,312.5L538.5,336.0L539.5,340.5L545.0,346.0L556.5,339.5L557.0,335.5L552.0,328.5L551.5,325.0L547.5,319.0L544.0,310.0L540.0,305.0ZM629.0,302.0L598.5,318.5L599.0,327.5L582.5,336.5L584.5,343.0L589.0,350.0L588.0,356.0L592.0,364.5L591.0,366.0L588.0,366.0L582.0,356.5L579.0,357.0L579.5,362.5L584.5,371.0L587.0,373.0L589.5,372.5L590.5,368.5L597.0,369.0L598.5,368.0L598.5,364.0L594.5,356.0L595.0,354.0L603.5,348.5L610.0,347.5L621.0,370.0L612.0,375.0L609.0,373.5L604.5,374.0L599.0,376.5L600.0,381.5L606.0,383.0L606.0,388.0L607.5,390.5L613.0,389.5L614.5,385.0L618.0,385.5L622.0,395.5L618.0,398.5L615.0,404.0L617.0,412.0L622.5,415.5L633.0,414.5L639.5,425.5L639.0,427.5L629.0,433.5L629.0,437.0L631.0,440.0L635.0,441.0L643.5,436.0L644.5,432.5L652.0,429.0L654.5,429.5L656.0,434.5L659.0,437.5L659.0,442.5L661.5,448.0L661.0,459.0L653.0,463.5L653.0,466.0L656.0,468.5L656.0,473.0L658.5,474.5L674.0,474.5L681.5,471.0L693.0,474.5L697.0,474.0L700.0,471.5L700.0,467.0L705.0,465.5L705.5,463.0L708.5,461.0L708.5,457.5L705.5,453.5L711.5,449.5L711.5,446.0L706.5,438.0L701.5,438.0L699.0,436.5L689.0,416.0L676.5,394.5L678.0,390.5L687.5,386.0L691.0,383.0L691.0,381.0L681.5,364.5L677.0,364.5L670.0,369.0L666.5,368.5L661.5,365.5L642.0,329.0L644.5,325.0L644.5,322.5L633.0,302.5ZM1324.5,300.5L1320.5,301.5L1312.0,298.0L1307.5,302.5L1303.0,303.0L1300.5,307.5L1304.0,310.5L1298.5,311.5L1289.0,333.0L1284.5,333.5L1276.5,327.5L1272.5,327.5L1266.0,331.0L1264.5,335.5L1267.5,342.0L1274.0,346.5L1279.5,353.0L1272.5,369.0L1274.0,373.0L1288.0,379.5L1291.0,378.0L1312.0,336.5L1308.5,333.0L1314.0,332.0L1317.5,325.5L1317.0,322.0L1320.0,320.5L1324.5,311.5L1324.0,310.0L1328.0,303.5ZM1326.5,301.5L1327.0,306.0L1324.0,310.0L1320.0,320.5L1317.0,322.0L1317.5,325.5L1314.0,332.0L1308.5,332.5L1311.0,334.5L1311.5,337.0L1296.5,367.5L1294.5,369.0L1291.0,378.0L1288.0,379.5L1274.0,373.0L1272.5,369.0L1279.5,352.5L1275.0,347.0L1267.5,342.0L1264.5,335.5L1266.0,331.0L1268.0,329.0L1276.5,327.5L1283.5,333.0L1288.0,333.5L1290.0,332.0L1298.5,311.5L1304.0,311.0L1301.0,308.0L1303.0,303.0L1308.5,302.0L1309.5,299.5L1312.0,298.0L1320.5,301.5ZM481.0,256.5L480.0,257.0L480.0,302.0L481.5,302.5L513.0,286.0L515.0,283.5L515.0,280.5L509.5,270.0L507.5,268.5L503.0,269.0L495.0,274.0L492.0,274.0ZM557.5,212.5L554.5,213.0L552.0,215.5L533.5,224.5L510.0,238.5L510.0,241.5L517.5,256.5L520.0,258.5L523.5,258.5L530.0,255.0L534.0,255.5L539.5,264.5L539.5,267.0L543.5,273.5L545.5,274.5L580.0,256.0L580.0,252.5L576.5,245.0L567.0,229.5L561.5,217.0ZM555.0,169.5L540.5,171.5L541.5,197.0L543.5,199.0L555.0,199.0L558.0,197.5L558.0,178.0L557.0,170.5ZM480.0,163.0L480.0,205.0L499.0,204.5L516.0,202.5L519.5,201.0L518.0,177.5L493.0,180.0L487.5,179.5L485.0,174.0L484.5,165.5L482.0,163.0ZM1059.5,155.0L1052.5,170.0L1052.0,174.5L1061.0,180.0L1062.0,183.5L1034.0,241.5L1033.5,245.0L1050.0,252.0L1051.0,253.5L1050.5,259.0L1070.5,269.5L1071.5,271.5L1071.0,278.0L1092.0,288.5L1093.0,291.0L1091.5,292.5L1090.5,298.0L1098.5,302.5L1099.5,305.0L1104.5,305.5L1108.0,308.0L1108.5,310.5L1105.0,313.0L1105.5,314.5L1117.0,321.0L1119.5,320.5L1122.0,315.5L1125.0,315.0L1146.0,325.0L1149.0,328.5L1148.5,334.0L1151.0,341.0L1159.0,346.0L1173.5,343.5L1175.0,345.5L1175.0,354.0L1175.0,345.5L1173.5,343.5L1167.0,344.0L1163.0,346.0L1155.5,344.5L1151.0,341.0L1148.5,334.0L1149.0,328.5L1148.0,326.5L1132.5,318.5L1154.5,319.0L1155.5,322.5L1155.5,336.0L1154.5,338.0L1156.5,338.0L1159.0,340.5L1173.0,341.0L1174.0,340.0L1173.0,334.5L1173.0,324.0L1174.0,323.0L1173.0,319.0L1174.0,317.0L1172.5,309.5L1174.0,308.5L1175.0,304.0L1175.0,323.0L1176.0,325.0L1175.0,337.5L1178.5,340.0L1189.0,335.5L1207.5,297.0L1212.5,289.5L1212.0,288.0L1236.0,241.0L1235.5,240.0L1240.5,232.0L1251.0,236.5L1252.0,238.5L1253.5,238.0L1254.5,241.5L1259.0,242.5L1260.0,244.5L1261.5,244.0L1290.0,257.5L1295.5,257.0L1313.5,266.0L1315.5,269.0L1340.0,281.0L1343.5,285.0L1356.0,287.5L1366.5,293.0L1366.0,298.0L1362.5,303.5L1360.0,311.0L1350.5,326.0L1351.0,327.5L1341.0,346.0L1341.5,347.5L1339.0,350.5L1329.5,372.5L1321.5,387.0L1320.5,394.0L1317.0,402.0L1312.0,408.0L1316.5,412.0L1315.5,413.0L1312.5,411.5L1310.0,413.0L1298.0,440.0L1294.5,443.0L1295.0,447.0L1284.5,470.0L1279.5,470.0L1264.0,464.0L1260.0,464.0L1258.0,467.5L1245.0,461.0L1246.5,454.5L1244.0,452.0L1193.0,429.0L1188.5,429.5L1185.0,425.5L1178.5,425.0L1150.0,412.0L1145.0,412.5L1140.5,410.0L1142.0,404.0L1150.0,408.0L1152.5,406.5L1165.0,379.0L1170.0,375.0L1176.5,360.5L1170.0,375.0L1165.0,379.0L1152.5,406.5L1149.5,407.5L1145.0,405.0L1141.0,404.5L1140.5,410.0L1142.5,411.5L1152.0,413.0L1178.5,425.0L1185.0,425.5L1188.5,429.5L1193.0,429.0L1244.0,452.0L1246.5,454.5L1245.0,461.0L1258.0,467.5L1260.5,464.5L1264.0,464.0L1283.5,470.5L1285.5,469.0L1295.0,447.0L1294.5,443.0L1298.0,440.5L1310.0,413.0L1312.5,411.5L1316.5,412.5L1316.5,411.0L1313.5,410.0L1312.5,407.5L1317.0,402.0L1320.5,394.0L1321.5,387.0L1329.0,374.0L1351.5,324.5L1358.5,314.0L1364.5,301.5L1366.5,293.0L1356.0,287.5L1344.0,284.5L1340.0,281.0L1320.5,272.0L1306.5,262.0L1295.5,257.0L1288.0,256.5L1255.5,241.5L1254.5,238.5L1240.5,232.0L1235.5,239.5L1234.0,245.0L1215.5,280.5L1212.0,290.0L1201.0,310.0L1190.0,334.5L1181.5,339.0L1176.5,339.5L1175.5,338.0L1176.0,325.0L1219.0,233.0L1222.5,222.0L1215.0,218.5L1206.0,218.0L1183.0,207.0L1180.0,204.0L1180.5,200.0L1172.5,196.0L1171.5,191.5L1170.0,190.5L1164.5,192.0L1153.0,190.0L1145.0,190.5L1141.0,188.0L1138.5,183.0L1138.5,179.5L1134.5,176.5L1105.5,173.0L1101.0,168.5L1089.0,160.5L1086.0,159.5L1082.5,160.5L1079.0,158.0L1075.5,160.0L1063.5,155.0ZM1060.5,154.5L1075.5,160.0L1080.0,158.5L1082.5,160.5L1084.5,159.5L1089.0,160.5L1101.0,168.5L1103.5,173.0L1117.5,175.5L1128.0,175.0L1131.5,177.0L1134.5,176.5L1138.5,179.5L1138.0,182.5L1141.0,188.0L1145.0,190.5L1159.0,190.5L1162.0,192.0L1170.0,190.5L1171.5,191.5L1171.0,194.0L1174.0,198.0L1175.5,197.5L1180.5,200.0L1179.5,203.5L1183.0,207.0L1204.5,216.5L1205.5,218.5L1210.5,219.5L1215.0,218.5L1222.5,222.5L1219.0,233.0L1215.5,238.0L1212.5,247.0L1203.5,264.5L1203.5,267.0L1200.5,271.0L1196.5,279.5L1197.0,281.0L1189.5,294.5L1176.0,325.0L1175.0,323.0L1175.5,304.5L1174.0,305.5L1174.0,308.5L1172.5,309.5L1174.0,317.0L1173.0,319.0L1174.0,340.0L1173.0,341.0L1159.0,340.5L1156.5,338.0L1154.5,338.0L1155.5,336.0L1154.5,319.0L1131.5,318.5L1125.0,315.0L1122.0,315.5L1118.5,321.0L1110.5,318.0L1105.0,314.0L1108.0,311.5L1108.5,307.5L1102.5,304.5L1100.5,305.5L1098.5,302.5L1090.5,297.5L1093.0,291.0L1092.0,288.5L1071.0,278.0L1071.5,271.5L1070.5,269.5L1051.5,259.5L1050.0,252.0L1033.5,245.0L1034.0,241.5L1062.5,183.0L1061.5,180.5L1056.5,177.5L1055.5,175.5L1054.0,176.0L1052.0,174.5L1052.5,170.0L1059.0,158.0L1058.5,156.5ZM711.5,153.5L707.0,153.0L692.0,160.5L687.0,157.5L682.0,159.0L676.0,157.5L666.0,163.5L660.0,160.5L656.0,160.5L643.5,167.5L641.0,167.0L639.0,162.0L636.0,160.5L632.0,160.5L626.0,163.0L616.5,163.0L602.5,170.5L598.0,174.5L590.5,177.0L587.0,180.0L588.0,185.0L592.0,193.0L588.0,199.5L588.0,204.5L590.0,207.0L589.0,214.0L595.5,226.5L597.5,228.0L599.0,233.5L607.5,242.0L608.5,244.5L616.0,247.0L626.0,264.0L629.5,265.0L636.0,262.0L638.5,262.5L643.5,271.5L648.0,272.5L697.5,248.5L697.5,245.0L692.5,235.5L690.0,233.5L679.0,210.0L681.0,207.5L725.5,183.5L725.5,179.0L721.5,174.0ZM532.5,141.0L524.0,140.0L500.5,142.5L501.5,155.5L530.0,154.5L533.5,152.5ZM918.0,159.5L901.0,126.0L897.5,124.0L881.0,132.5L881.0,135.0L885.0,143.0L884.0,147.5L882.5,148.0L876.5,145.5L867.5,150.0L861.0,155.0L844.0,163.0L836.5,168.0L833.5,168.5L831.5,167.5L827.5,161.0L826.0,156.5L820.0,148.0L808.0,125.5L805.5,125.0L795.0,129.0L791.5,125.5L787.5,125.0L785.5,126.0L786.0,132.0L785.0,133.5L780.5,133.5L774.0,136.0L745.5,152.0L747.0,160.0L751.0,165.0L756.5,176.5L755.5,179.0L747.0,183.5L747.0,186.0L757.5,204.5L765.0,206.0L774.5,226.0L778.5,227.0L784.5,224.0L786.5,220.5L792.0,218.5L795.0,215.5L820.0,203.0L825.0,205.0L828.0,212.0L831.0,215.5L834.5,215.0L850.0,207.0L850.0,204.0L845.5,194.5L846.0,189.5L880.5,170.0L889.0,166.5L890.0,162.0L888.5,158.0L890.0,156.0L897.5,153.0L899.5,153.5L901.5,159.0L907.5,167.5L917.5,162.5ZM866.5,116.0L853.0,116.5L847.5,119.0L849.5,130.0L851.5,132.5L851.5,137.0L859.5,137.5L870.5,135.0L870.5,130.5Z";   // building footprints traced from the zoomed Google Maps screenshots
+const SHAPES = {"victoria":"M1060.5,155.0L1053.0,170.0L1052.5,174.5L1055.5,175.0L1056.5,177.0L1062.0,180.5L1063.0,183.0L1034.5,241.5L1034.0,245.0L1050.0,251.5L1051.5,253.5L1051.5,259.0L1071.0,269.5L1072.0,271.5L1071.0,277.5L1092.0,288.0L1093.5,291.0L1091.0,297.5L1098.5,302.0L1100.5,305.0L1102.5,304.0L1109.0,307.5L1108.5,311.5L1105.5,314.0L1110.5,317.5L1118.5,320.5L1122.0,315.0L1125.0,314.5L1131.5,318.0L1154.5,318.5L1156.0,322.5L1156.0,336.0L1155.0,338.0L1156.5,337.5L1159.0,340.0L1173.0,340.5L1172.5,324.0L1173.5,323.0L1172.5,319.0L1173.5,317.0L1172.0,309.5L1173.5,308.5L1173.5,305.5L1175.0,303.5L1176.0,304.5L1176.0,324.5L1189.0,294.5L1196.5,281.0L1196.0,279.5L1203.0,267.0L1203.0,264.5L1212.0,247.0L1215.0,238.0L1218.5,233.0L1222.0,222.5L1215.0,219.0L1212.0,220.0L1205.5,219.0L1204.5,217.0L1183.0,207.5L1179.0,203.5L1180.0,200.0L1174.0,198.5L1170.5,194.0L1171.0,191.5L1170.0,191.0L1164.5,192.5L1153.0,190.5L1145.0,191.0L1140.5,188.0L1137.5,182.5L1138.0,179.5L1134.5,177.0L1131.5,177.5L1128.0,175.5L1117.5,176.0L1103.5,173.5L1101.0,169.0L1089.0,161.0L1086.0,160.0L1082.5,161.0L1080.0,159.0L1075.5,160.5Z","dental":"M1240.5,232.5L1189.0,336.0L1178.5,340.5L1174.5,337.5L1175.5,335.5L1175.0,304.5L1174.5,308.5L1173.0,309.5L1174.5,317.0L1173.5,319.0L1174.5,340.0L1173.0,341.5L1159.0,341.0L1156.5,338.5L1154.0,338.0L1155.0,336.0L1154.5,319.5L1146.0,319.0L1144.0,320.0L1143.0,319.0L1133.0,318.5L1148.5,326.5L1149.5,328.5L1149.0,334.0L1151.5,341.0L1155.5,344.0L1163.0,345.5L1167.0,343.5L1173.5,343.0L1175.5,345.5L1175.0,357.5L1177.5,361.0L1170.5,375.0L1165.5,379.0L1153.0,406.5L1150.0,408.5L1142.0,404.5L1141.0,410.0L1145.0,412.0L1150.0,411.5L1178.5,424.5L1185.0,425.0L1188.5,429.0L1193.0,428.5L1244.0,451.5L1247.0,454.5L1245.5,461.0L1258.0,467.0L1260.0,463.5L1264.0,463.5L1283.5,470.0L1285.0,469.0L1294.5,447.0L1294.0,443.0L1297.5,440.0L1309.5,413.0L1312.5,411.0L1316.0,412.0L1311.5,408.0L1316.5,402.0L1320.0,394.0L1321.0,387.0L1329.0,372.5L1338.5,350.5L1341.0,347.5L1340.5,346.0L1350.5,327.5L1350.0,326.0L1359.5,311.0L1362.0,303.5L1365.5,298.0L1366.0,293.0L1356.0,288.0L1343.5,285.5L1340.0,281.5L1315.5,269.5L1313.5,266.5L1295.5,257.5L1290.0,258.0L1261.5,244.5L1260.0,245.0L1259.0,243.0L1255.0,242.5L1253.5,238.5L1252.0,239.0L1251.0,237.0ZM1224.5,405.5L1225.5,404.5L1265.0,404.5L1273.5,408.5L1274.5,413.0L1268.0,426.0L1265.0,428.0L1227.0,410.5L1225.5,411.0ZM1324.5,300.0L1328.5,303.5L1324.5,310.0L1325.0,311.5L1320.5,320.5L1317.5,322.0L1318.0,325.5L1314.5,332.0L1312.0,333.5L1309.0,333.0L1312.5,336.5L1291.5,378.0L1288.0,380.0L1274.0,373.5L1272.0,369.0L1279.0,353.0L1274.0,347.0L1267.0,342.0L1264.0,335.5L1265.5,331.0L1268.0,328.5L1276.5,327.0L1284.5,333.0L1289.0,332.5L1297.0,313.0L1299.0,310.5L1303.5,310.5L1300.0,307.5L1303.0,302.5L1307.5,302.0L1312.0,297.5L1320.5,301.0Z","newopd":"M805.5,466.5L802.0,465.5L783.5,476.0L779.5,476.0L777.5,471.0L773.5,466.0L774.0,463.0L777.5,460.5L777.5,458.0L774.5,454.5L771.0,453.5L763.0,458.5L763.5,463.0L760.5,466.5L747.5,473.0L732.0,488.0L708.5,494.5L708.0,498.5L705.0,503.5L701.5,503.5L700.0,499.5L697.5,498.0L691.5,498.0L687.5,500.0L686.5,503.0L688.5,509.5L686.5,514.5L675.5,517.5L659.0,516.0L653.0,519.5L652.5,522.0L657.0,522.5L658.0,525.5L662.5,528.5L663.5,533.5L668.0,534.5L669.0,536.0L669.0,540.0L671.0,542.0L671.0,546.5L673.5,549.5L673.5,552.5L676.5,555.5L688.0,577.0L687.5,580.5L684.0,583.0L684.0,586.0L687.5,591.0L690.0,591.5L697.0,587.0L698.5,582.0L704.0,577.5L709.5,576.0L719.5,569.0L725.0,567.5L733.0,562.0L738.0,563.0L739.5,567.5L746.5,577.0L748.5,584.0L746.0,587.5L749.5,592.0L760.5,586.5L760.0,583.5L761.5,581.5L773.5,575.0L772.0,567.0L762.5,551.5L763.0,547.5L779.0,537.5L785.5,535.0L793.5,529.0L798.0,528.5L804.5,532.0L814.5,526.0L814.5,523.0L812.0,518.5L805.5,517.5L802.5,515.5L796.0,503.0L798.5,498.5L806.5,495.0L815.5,488.5L815.5,485.0Z","fort":"M1094.0,520.5L1091.5,525.0L1091.5,546.0L1097.0,553.0L1097.5,562.0L1094.5,566.5L1088.0,567.5L1084.5,573.5L1103.5,577.5L1114.0,577.5L1121.0,579.0L1122.5,584.5L1164.5,601.0L1187.0,618.0L1189.5,617.5L1195.0,607.0L1199.5,607.0L1249.0,633.5L1253.5,634.5L1263.5,631.5L1268.5,628.0L1273.0,622.0L1282.5,605.0L1283.0,601.0L1287.5,592.5L1298.5,561.5L1298.5,552.0L1292.0,543.5L1291.0,532.0L1299.5,513.5L1301.0,506.0L1187.0,457.0L1170.5,483.5L1168.5,490.0L1165.5,494.0L1164.0,499.5L1145.5,537.5L1142.0,538.0L1131.0,535.5L1129.5,533.0L1129.0,522.5L1123.0,518.5L1100.5,517.0ZM1156.5,561.5L1157.5,557.0L1161.0,555.5L1164.5,550.5L1164.5,548.0L1181.5,510.5L1182.0,507.0L1193.0,483.5L1196.0,481.0L1230.0,494.0L1232.5,496.5L1231.5,503.0L1263.5,517.0L1268.5,517.5L1287.0,525.0L1288.5,527.5L1287.5,532.0L1284.5,534.5L1269.5,528.5L1252.0,528.5L1236.5,536.5L1231.0,542.5L1227.0,551.0L1225.0,552.0L1211.5,546.5L1209.0,547.0L1207.0,551.5L1209.0,557.0L1219.0,560.0L1222.5,566.0L1221.5,572.5L1219.0,576.0L1216.0,577.0L1210.5,576.0L1205.5,569.0L1202.5,568.5L1198.5,570.5L1197.0,575.5L1187.0,578.0L1184.5,576.5L1184.0,572.5L1172.5,567.0L1167.5,567.0L1164.0,564.0L1158.0,563.5Z","infosys":"M863.0,622.0L862.0,625.0L863.0,627.0L859.0,631.5L857.5,638.0L853.0,646.5L853.5,649.0L856.5,649.0L927.5,678.0L936.5,680.5L935.5,688.0L931.5,691.5L919.5,691.0L918.0,694.0L919.5,696.0L927.0,698.5L938.0,698.0L942.0,702.0L942.5,756.5L941.0,758.0L933.5,758.0L931.0,753.0L913.0,753.0L926.5,758.0L928.0,762.0L925.5,769.5L932.5,772.0L936.0,762.0L944.5,763.0L947.5,757.0L947.5,754.0L952.0,746.5L956.0,745.5L959.5,747.0L961.5,741.5L967.0,731.0L966.5,726.0L961.0,722.0L960.5,718.0L963.0,714.5L967.5,713.0L967.0,708.5L969.5,704.0L963.5,704.5L960.0,702.0L959.5,699.0L968.0,677.0L970.5,673.5L975.0,659.5L970.0,657.0L968.5,660.5L963.5,660.0L942.5,651.0L939.5,651.0L924.5,645.0L913.5,637.5L909.0,639.0L903.5,637.0L893.5,636.5L891.0,635.0L890.0,631.5L883.5,628.5L881.0,630.0L872.0,625.0L866.5,625.5Z","pathmicro":"M828.5,608.5L800.5,674.5L801.0,678.0L797.0,682.5L796.5,686.0L798.0,691.0L795.0,694.0L795.5,696.5L792.0,703.5L793.0,706.0L788.5,709.5L788.5,711.0L794.0,712.0L796.0,714.5L836.0,731.0L876.5,745.5L879.5,745.5L890.5,750.5L896.5,752.0L900.5,749.0L910.5,752.5L931.0,752.0L933.0,753.5L933.5,757.0L941.0,757.0L941.0,746.0L942.0,744.5L941.0,743.5L941.0,702.0L938.0,699.0L927.0,699.5L919.5,697.0L917.0,694.0L919.5,690.0L930.0,690.5L916.5,686.0L911.5,691.5L908.5,691.5L904.0,687.0L904.0,680.5L843.0,656.5L841.5,654.5L841.5,634.0L849.0,614.5Z","trauma":"M521.5,622.5L527.0,626.5L527.5,629.0L524.0,631.5L524.0,635.0L538.0,661.0L597.5,687.5L600.0,692.0L611.0,693.0L616.5,696.0L621.0,695.0L637.0,696.0L651.5,685.5L659.0,685.5L691.0,668.0L691.0,664.5L681.5,646.5L682.5,644.0L688.0,641.0L687.0,632.0L683.0,630.0L675.5,633.0L669.5,629.5L646.0,622.0L630.0,620.5L628.5,617.5L632.0,611.5L639.0,604.5L639.5,597.5L632.5,592.0L624.0,588.5L611.5,589.5L608.0,595.5L600.0,597.5L592.0,594.0L590.0,595.0L590.0,598.5L587.5,600.5L579.5,600.0L578.5,595.0L573.0,594.0L567.5,596.5L565.5,599.0L558.0,601.0L535.5,613.0Z","nephro":"M406.0,715.0L403.0,718.0L344.5,752.5L342.5,751.5L341.5,746.0L334.5,733.5L312.5,744.0L315.5,751.5L322.5,750.5L325.0,755.5L327.5,757.5L332.5,755.0L334.5,756.0L334.5,759.0L331.0,760.0L326.5,764.5L342.0,790.5L347.5,797.5L351.0,805.0L355.0,805.5L356.0,802.0L361.0,799.0L362.5,794.5L369.5,793.0L372.0,794.0L374.5,791.0L383.0,786.5L387.5,790.5L388.0,796.0L391.5,798.0L395.0,804.0L393.0,807.5L384.5,808.5L384.5,813.0L382.5,816.0L374.0,817.5L372.0,820.5L369.5,821.5L368.5,825.5L359.0,826.0L354.5,831.0L346.0,835.5L352.0,848.5L354.5,851.0L354.5,853.0L358.5,858.0L363.5,868.0L367.0,871.5L371.5,870.0L373.5,867.5L377.0,866.5L388.5,858.5L391.5,858.0L403.5,851.0L408.0,853.0L413.0,861.0L422.5,856.5L436.0,848.0L430.5,838.5L430.5,834.0L463.5,814.0L456.5,800.0L441.5,777.0L407.5,797.5L405.5,796.5L397.0,782.5L397.5,777.5L430.0,758.5L431.0,756.5L408.0,716.5Z","vanivilas":"M538.5,810.0L536.5,811.5L531.5,826.5L533.0,828.0L539.0,828.5L540.0,831.5L536.0,838.0L534.5,846.0L531.5,849.5L507.5,911.5L507.0,915.5L524.5,922.5L524.5,926.5L520.0,939.0L556.0,953.0L558.0,951.0L567.5,927.0L569.0,926.5L579.5,931.0L588.5,910.5L590.0,910.0L599.0,914.0L599.5,916.0L570.0,990.0L570.0,992.0L602.5,1003.5L603.5,1005.0L602.5,1007.5L597.0,1007.5L597.0,1019.0L590.5,1034.5L590.5,1038.5L597.0,1047.5L596.5,1052.0L619.5,1063.0L633.5,1065.0L648.0,1061.0L654.0,1063.0L655.5,1062.0L665.0,1033.5L621.0,1016.0L616.5,1012.5L617.0,1010.5L619.0,1009.5L699.5,1039.5L703.5,1039.5L738.0,950.0L738.0,914.5L740.5,912.5L752.0,912.5L753.5,911.5L774.0,858.0L740.5,845.0L729.5,843.0L725.0,838.5L706.5,839.5L701.5,832.0L634.5,807.5L626.0,808.5L595.0,794.5L591.0,802.0L625.0,817.5L626.5,820.5L623.0,830.0L632.0,835.0L617.5,877.5L614.5,884.0L612.0,885.0L601.5,880.5L601.0,878.5L605.0,867.5L598.0,863.0L609.0,831.5L575.5,818.5L574.0,819.5L571.0,828.0L569.0,829.0L559.5,824.5L559.0,818.5ZM729.5,929.5L731.5,932.0L732.0,935.5L730.0,941.0L725.5,946.0L720.0,948.5L716.0,944.5L712.5,943.0L712.5,938.0L716.0,934.0L722.0,930.0ZM541.5,897.5L545.5,897.5L559.5,904.0L560.5,905.5L553.0,922.0L551.0,922.5L536.0,916.0L534.5,914.0ZM565.5,840.0L570.5,840.0L585.5,846.0L586.0,848.0L579.5,863.5L576.5,864.0L560.0,857.0L559.5,854.5L561.5,850.5L562.0,845.0ZM668.5,839.0L674.5,843.5L726.5,862.0L728.0,864.0L706.5,923.0L701.0,933.0L700.5,942.0L697.0,944.5L696.5,949.5L677.0,1000.0L674.5,1001.5L668.0,999.5L665.5,997.0L680.0,950.0L680.5,945.0L674.0,938.0L672.5,938.5L672.5,942.5L669.0,944.5L648.5,990.0L642.0,989.5L617.5,980.0L613.5,977.0L613.5,973.5L636.5,912.0L640.0,905.5L639.5,902.5L641.5,900.5L660.0,849.0L663.5,842.5Z","minto":"M508.5,941.5L504.0,955.5L499.5,962.0L498.0,972.0L496.5,974.5L507.0,978.5L509.5,981.0L504.0,996.5L523.0,1004.0L523.5,1007.0L519.0,1019.5L569.0,1039.5L573.5,1039.5L583.0,1014.5L559.5,1005.5L558.0,1003.5L572.0,965.5L570.5,964.5L565.5,965.5L558.5,964.5L557.0,962.5L557.0,959.5L511.5,941.0Z","mintoregional":"M363.5,948.0L337.5,966.0L325.5,976.0L322.5,977.0L321.5,980.0L345.0,1013.5L347.5,1014.5L349.5,1017.5L355.5,1018.5L356.0,1021.5L354.5,1026.0L362.0,1032.0L368.5,1032.0L372.0,1033.5L372.0,1038.0L366.5,1039.0L365.5,1041.0L384.0,1066.0L384.0,1069.0L379.5,1072.0L379.5,1074.0L385.0,1080.5L387.0,1081.0L389.0,1080.0L390.5,1075.0L397.0,1071.5L407.5,1062.5L412.5,1060.0L433.5,1044.0L432.5,1041.0L422.5,1027.0L419.5,1025.0L413.0,1014.5L414.0,1012.0L432.0,999.0L433.0,996.5L421.5,980.0L415.0,973.0L397.0,986.5L392.0,986.0L368.0,952.0Z","hostel":"M489.0,1050.0L482.0,1068.0L482.0,1125.5L486.5,1126.0L486.5,1104.5L489.0,1102.5L564.0,1102.5L566.5,1104.5L566.5,1126.0L567.5,1126.5L626.0,1126.0L625.5,1101.5L492.5,1049.0Z"};   // footprints of the venues, by place id
+const OUTSIDE_ROADS = "M15,1388L10,1394L10,1402L13,1405L13,1446L15,1449L15,1466L17,1470L19,1502L34,1502L30,1444L28,1441L28,1403L26,1400L26,1391L22,1388ZM395,1313L378,1362L374,1369L374,1385L378,1393L388,1400L443,1414L464,1414L468,1416L475,1416L477,1418L476,1427L461,1482L461,1496L464,1502L504,1502L502,1497L480,1490L477,1487L494,1422L498,1420L506,1423L514,1427L519,1427L543,1436L545,1430L549,1427L556,1427L563,1430L563,1419L551,1422L544,1417L507,1407L499,1402L500,1388L508,1362L508,1353L495,1348L493,1353L484,1391L479,1401L436,1396L392,1383L389,1376L410,1320L409,1317ZM964,1305L954,1305L947,1322L941,1327L929,1323L917,1317L912,1317L909,1312L906,1313L883,1379L857,1435L849,1444L842,1448L834,1449L814,1443L811,1444L793,1502L857,1502L874,1458L902,1485L917,1485L949,1456L957,1439L964,1439L964,1399L946,1393L932,1382L919,1378L908,1379L904,1377L898,1370L894,1360L894,1355L904,1331L923,1339L939,1343L953,1341L959,1335L964,1324ZM900,1387L911,1386L928,1390L942,1403L950,1419L950,1433L945,1446L930,1460L917,1465L902,1465L887,1458L877,1448L871,1437L869,1426L871,1423L871,1415L879,1401L885,1394ZM1200,1114L1200,1126L1194,1127L1194,1130L1202,1152L1207,1155L1212,1155L1216,1151L1216,1140L1208,1119ZM104,1018L104,1118L106,1121L106,1141L103,1147L99,1150L86,1150L82,1148L0,1148L0,1205L5,1205L8,1209L8,1235L10,1238L10,1262L13,1265L13,1301L15,1305L15,1331L17,1334L17,1368L21,1377L30,1377L34,1370L32,1364L32,1330L30,1327L30,1296L28,1293L28,1263L26,1260L26,1225L24,1222L24,1209L27,1205L47,1205L50,1208L97,1208L100,1211L102,1235L104,1238L104,1256L109,1271L109,1289L111,1292L111,1308L113,1311L113,1324L115,1328L115,1341L117,1344L117,1364L119,1367L117,1376L109,1376L104,1378L98,1386L109,1462L112,1466L121,1465L125,1470L125,1502L191,1502L191,1495L189,1491L189,1467L187,1464L187,1440L185,1437L185,1413L183,1410L183,1386L181,1383L181,1367L176,1350L178,1342L174,1331L174,1319L172,1316L170,1280L168,1276L164,1225L162,1222L162,1215L165,1212L171,1214L171,1212L159,1203L148,1200L124,1177L110,1102L106,1018ZM1539,934L1537,934L1534,939L1534,949L1530,960L1528,982L1522,1006L1518,1038L1515,1042L1511,1072L1505,1096L1505,1105L1501,1119L1497,1174L1495,1177L1492,1203L1490,1207L1490,1216L1488,1219L1480,1277L1504,1277L1539,1253L1539,1234L1536,1234L1506,1256L1502,1257L1500,1255L1503,1236L1539,1209L1539,1189L1532,1192L1510,1210L1507,1209L1511,1181L1539,1163L1539,1144L1532,1146L1518,1156L1514,1154L1515,1136L1539,1118L1539,1099L1524,1108L1521,1106L1525,1089L1525,1079L1530,1073L1539,1069L1539,1052L1533,1053L1531,1051L1533,1035L1535,1032L1535,1021L1539,1011ZM102,890L0,891L0,907L102,908ZM1253,746L1252,750L1282,767L1320,784L1325,788L1407,828L1466,849L1491,860L1508,870L1509,878L1505,889L1499,924L1496,927L1476,925L1450,918L1438,918L1414,912L1396,912L1390,918L1388,925L1388,934L1382,958L1382,972L1386,976L1393,976L1398,970L1404,931L1407,928L1433,932L1436,934L1446,934L1449,936L1458,936L1470,940L1481,940L1494,946L1488,978L1486,981L1486,990L1476,1035L1476,1045L1467,1079L1467,1089L1465,1092L1461,1120L1458,1123L1438,1121L1429,1117L1422,1117L1396,1110L1389,1106L1371,1102L1356,1089L1358,1056L1356,1048L1351,1042L1329,1035L1321,1035L1315,1032L1312,1028L1310,1019L1304,1012L1204,966L1195,960L1171,952L1135,935L1117,931L1110,939L1110,942L1115,947L1185,974L1228,995L1232,998L1232,1009L1229,1012L1229,1020L1217,1075L1217,1091L1219,1093L1228,1093L1233,1089L1233,1079L1235,1076L1247,1008L1251,1006L1293,1026L1296,1029L1298,1041L1305,1047L1333,1053L1340,1058L1342,1062L1340,1095L1357,1113L1340,1161L1340,1166L1317,1216L1310,1227L1255,1217L1251,1215L1244,1215L1241,1213L1234,1213L1191,1202L1181,1202L1169,1211L1148,1252L1148,1277L1155,1276L1181,1223L1187,1219L1301,1242L1305,1247L1296,1277L1314,1277L1320,1246L1325,1237L1369,1251L1400,1249L1417,1258L1423,1258L1429,1251L1427,1244L1402,1232L1392,1232L1383,1236L1376,1236L1336,1223L1333,1220L1354,1176L1354,1171L1358,1164L1370,1123L1374,1120L1409,1130L1416,1130L1426,1135L1450,1139L1457,1144L1453,1161L1449,1199L1447,1202L1447,1214L1442,1227L1440,1253L1436,1269L1436,1277L1452,1277L1458,1234L1460,1231L1460,1221L1462,1218L1462,1204L1466,1191L1468,1165L1473,1151L1473,1138L1477,1126L1479,1104L1483,1093L1485,1071L1489,1059L1489,1052L1498,1018L1500,996L1504,984L1504,975L1506,972L1514,923L1526,879L1529,877L1539,880L1539,862L1536,862L1529,857L1529,847L1532,844L1539,846L1539,829L1524,829L1513,835L1513,849L1509,852L1489,839L1472,835L1460,829L1413,812L1342,778L1339,774L1288,751L1281,746ZM0,710L0,725L98,725L98,719L94,710ZM0,534L0,550L95,550L99,552L99,540L96,540L92,534ZM1504,259L1504,270L1497,289L1504,292L1521,305L1539,330L1539,267ZM1500,246L1501,254L1532,262L1539,262L1539,245ZM855,50L797,61L794,63L766,65L765,68L840,68L843,66L855,66ZM699,-19L699,-3L730,-1L730,-17ZM808,52L777,54L774,52L775,42L760,42L759,52L755,56L678,63L674,58L675,42L635,42L634,63L629,67L607,67L604,69L584,69L581,71L549,71L546,73L534,73L531,70L529,-17L532,-20L549,-21L514,-21L516,72L512,75L382,88L379,85L379,73L363,73L363,88L352,92L267,96L264,98L244,98L241,100L150,102L147,104L132,104L128,106L113,106L110,109L96,109L93,111L77,111L74,113L61,113L57,115L44,115L41,117L25,117L22,119L6,120L3,116L3,73L1,70L0,18L0,126L24,124L27,122L41,122L44,120L57,120L61,118L77,118L80,120L76,123L56,123L53,125L0,132L0,172L14,172L17,170L25,170L28,172L24,175L0,177L0,206L11,206L15,204L26,204L29,201L41,201L44,199L55,199L73,195L87,195L90,193L94,196L96,202L97,502L99,502L101,296L106,182L114,167L89,167L86,165L90,162L118,163L124,158L138,136L161,124L165,124L169,120L198,117L198,115L180,115L176,117L118,119L115,117L117,115L145,114L148,112L181,112L184,110L212,110L215,108L245,108L248,105L277,105L280,103L310,103L313,101L332,101L335,103L331,106L311,106L308,109L250,111L249,114L446,112L449,110L462,110L470,105L477,105L503,97L515,97L524,93L531,93L534,88L472,92L469,94L428,96L425,98L403,98L400,100L382,100L379,102L364,102L361,100L365,97L381,97L384,95L404,95L407,93L450,91L453,89L471,89L474,87L540,82L543,80L581,78L584,76L642,72L645,70L709,68L712,66L725,66L729,64L744,64L747,62L761,62L764,59L796,57L799,55L807,55ZM81,119L86,116L109,116L112,118L108,121L85,121ZM57,-21L58,-9L103,-9L106,-7L338,-7L338,-21Z";
+const STREET_LABELS = [
+  {"t": "2nd Main Rd", "x": 123, "y": 678, "r": -90},
+  {"t": "Ft A St", "x": 1122, "y": 1089, "r": 25}
+];
+
+
+/* ---------- Helpers ---------- */
+const $ = (s) => document.querySelector(s);
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs = {}, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const toMin = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return h * 60 + m; };
+const fmt = (min) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+const dur = (m) => m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? " " + (m % 60) + " min" : ""}`;
+const P = Object.fromEntries(PLACES.map((p) => [p.id, p]));
+const E = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
+const anchor = (p) => p.point;
+const gmapsQ = (p) => p.ll ? `${p.ll[0]},${p.ll[1]}` : (p.q || `${p.name}, BMCRI, Bengaluru`);
+
+/* ---------- State ---------- */
+const state = { day: 0, t: 870, follow: false, sel: null, start: { type: "preset", id: "north" }, customOpen: false, picking: false, fopen: false, cats: new Set(Object.keys(CATEGORIES)) };
+const todayIdx = () => FEST.dates.indexOf(new Date().toLocaleDateString("en-CA"));
+const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+function status(ev) {
+  const s = toMin(ev.start), e = toMin(ev.end), t = state.t;
+  if (ev.day !== state.day) return ev.day < state.day ? "ended" : "later";
+  if (t >= s && t < e) return "live";
+  if (t < s) return s - t <= 60 ? "soon" : "later";
+  return "ended";
+}
+const LABEL = { live: "Live now", soon: "Starting soon", later: "Later", ended: "Ended" };
+
+/* ---------- Walking graph built from the road polylines ---------- */
+const G = (() => {
+  const segs = [];
+  ROADS.forEach((r) => { for (let i = 0; i < r.pts.length - 1; i++) segs.push({ a: r.pts[i], b: r.pts[i + 1], ts: [0, 1] }); });
+  const at = (s, t) => [s.a[0] + (s.b[0] - s.a[0]) * t, s.a[1] + (s.b[1] - s.a[1]) * t];
+  const proj = (p, s) => { const dx = s.b[0] - s.a[0], dy = s.b[1] - s.a[1], L = dx * dx + dy * dy;
+    let t = L ? ((p[0] - s.a[0]) * dx + (p[1] - s.a[1]) * dy) / L : 0; t = Math.max(0, Math.min(1, t));
+    const q = at(s, t); return { t, q, d: Math.hypot(p[0] - q[0], p[1] - q[1]) }; };
+  // crossings
+  for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) {
+    const s = segs[i], o = segs[j];
+    const r = [s.b[0] - s.a[0], s.b[1] - s.a[1]], q = [o.b[0] - o.a[0], o.b[1] - o.a[1]];
+    const den = r[0] * q[1] - r[1] * q[0]; if (Math.abs(den) < 1e-9) continue;
+    const w = [o.a[0] - s.a[0], o.a[1] - s.a[1]];
+    const t = (w[0] * q[1] - w[1] * q[0]) / den, u = (w[0] * r[1] - w[1] * r[0]) / den;
+    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) { s.ts.push(t); o.ts.push(u); }
+  }
+  // near-touching ends (T-junctions)
+  const extra = [];
+  segs.forEach((s, i) => [s.a, s.b].forEach((p) => segs.forEach((o, j) => { if (i === j) return; const r = proj(p, o); if (r.d > 0.5 && r.d < 8) { o.ts.push(r.t); extra.push([p, r.q]); } })));
+  const key = (p) => `${Math.round(p[0])},${Math.round(p[1])}`;
+  const nodes = {}, adj = {}, edges = [];
+  const link = (p, q) => { const a = key(p), b = key(q); if (a === b) return; nodes[a] = p; nodes[b] = q; const d = Math.hypot(p[0] - q[0], p[1] - q[1]);
+    (adj[a] ||= []).push([b, d]); (adj[b] ||= []).push([a, d]); edges.push({ a, b, s: { a: p, b: q } }); };
+  for (const s of segs) { const ts = [...new Set(s.ts.map((t) => +t.toFixed(5)))].sort((x, y) => x - y); for (let k = 0; k < ts.length - 1; k++) link(at(s, ts[k]), at(s, ts[k + 1])); }
+  extra.forEach(([p, q]) => link(p, q));
+  return { nodes, adj, edges, proj };
+})();
+function snap(p) { let best = null; for (const e of G.edges) { const r = G.proj(p, e.s); if (!best || r.d < best.d) best = { ...r, e }; } return best; }
+function walkRoute(from, to) {
+  const A = snap(from), B = snap(to);
+  const adj = new Map(Object.entries(G.adj).map(([k, v]) => [k, [...v]]));
+  const add = (id, sn) => { const ea = G.nodes[sn.e.a], eb = G.nodes[sn.e.b]; const da = Math.hypot(sn.q[0] - ea[0], sn.q[1] - ea[1]), db = Math.hypot(sn.q[0] - eb[0], sn.q[1] - eb[1]);
+    adj.set(id, [[sn.e.a, da], [sn.e.b, db]]); adj.get(sn.e.a).push([id, da]); adj.get(sn.e.b).push([id, db]); };
+  add("A", A); add("B", B);
+  if (A.e === B.e) { const d = Math.hypot(A.q[0] - B.q[0], A.q[1] - B.q[1]); adj.get("A").push(["B", d]); adj.get("B").push(["A", d]); }
+  const pos = (k) => k === "A" ? A.q : k === "B" ? B.q : G.nodes[k];
+  const dist = new Map([["A", 0]]), prev = new Map(), done = new Set();
+  while (true) {
+    let u = null, ud = Infinity; for (const [k, d] of dist) if (!done.has(k) && d < ud) { u = k; ud = d; }
+    if (u === null || u === "B") break; done.add(u);
+    for (const [v, w] of adj.get(u) || []) if (ud + w < (dist.get(v) ?? Infinity)) { dist.set(v, ud + w); prev.set(v, u); }
+  }
+  const keys = ["B"]; while (keys[0] !== "A" && prev.has(keys[0])) keys.unshift(prev.get(keys[0]));
+  const pts = [from, ...keys.map(pos), to];
+  let len = 0; for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+  return { pts, meters: Math.max(10, Math.round(len * M_PER_UNIT / 10) * 10) };
+}
+
+/* ---------- Draw base map ---------- */
+const svg = $("#map");
+const WORLD = { x: 0, y: -21, w: 1540, h: 1524 };   // the whole drawn map; the view never leaves it
+let vb = { ...WORLD }, fitW = WORLD.w;
+const aspect = () => (svg.clientWidth && svg.clientHeight) ? svg.clientHeight / svg.clientWidth : WORLD.h / WORLD.w;
+const maxW = () => Math.min(WORLD.w, WORLD.h / aspect());   // widest view that still fits inside the map = "cover" the screen
+const setVB = () => {
+  svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  const k = (svg.clientWidth || 1) / vb.w;   // screen px per map unit; keeps labels readable when zoomed far out
+  svg.classList.toggle("zoomed", vb.w < fitW * 0.62);
+  svg.style.setProperty("--fs", Math.max(1, Math.min(1.9, 9.5 / (13 * k))).toFixed(2));
+  updateScale();
+};
+
+function drawBase() {
+  el("rect", { x: WORLD.x - 40, y: WORLD.y - 40, width: WORLD.w + 80, height: WORLD.h + 80, fill: "var(--land)" }, svg);
+  el("path", { d: OUTSIDE_ROADS, class: "r-out" }, svg);
+  const perim = ROADS.find((r) => r.kind === "major");
+  el("polygon", { points: CAMPUS, class: "campus" }, svg);
+  el("polyline", { points: perim.pts.map((p) => p.join(",")).join(" "), class: "campus-glow" }, svg);
+  el("polygon", { points: DENTAL_AREA, class: "dental-area" }, svg);
+  el("path", { d: BUILDINGS_D, class: "bld" }, svg);
+  const vs = el("g", { id: "venues" }, svg);
+  for (const id in SHAPES) { const g = el("g", { class: "vshape", "data-place": id }, vs); el("path", { d: SHAPES[id], class: "vb" }, g); }
+  const roads = el("g", { class: "roads" }, svg);
+  const W = { major: [26, 23], minor: [12, 9.5], out: [0, 15] };
+  const line = (r) => r.pts.map((p) => p.join(",")).join(" ");
+  for (const r of ROADS) if (W[r.kind][0]) el("polyline", { points: line(r), class: "r-edge", "stroke-width": W[r.kind][0] }, roads);
+  for (const r of ROADS) el("polyline", { points: line(r), class: "r-fill " + r.kind, "stroke-width": W[r.kind][1] }, roads);
+  // bus stops, as in the reference map
+  for (const [x, y] of BUS_STOPS) { const g = el("g", { transform: `translate(${x} ${y})`, class: "bus" }, roads); el("rect", { x: -9, y: -9, width: 18, height: 18, rx: 4 }, g); el("rect", { x: -5, y: -5, width: 10, height: 6, rx: 1.5, fill: "var(--ink)" }, g); }
+  for (const s of STREET_LABELS) el("text", { x: s.x, y: s.y, class: "street", transform: `rotate(${s.r} ${s.x} ${s.y})` }, svg).textContent = s.t;
+
+  const pl = el("g", { id: "places" }, svg);
+  for (const p of PLACES) {
+    const [x, y] = p.point, g = el("g", { class: `pin ${p.kind}`, "data-place": p.id }, pl);
+    const lines = p.lines || [p.name], r = 13;
+    if (p.kind === "minor") {
+      el("circle", { class: "hit", cx: x, cy: y, r: 18 }, g);
+      el("circle", { class: "dotmk", cx: x, cy: y, r: 5.5 }, g);
+      const t = el("text", { x: x + 12, y: y + 4, class: "plabel" }, g); t.textContent = p.name;
+      continue;
+    }
+    // pin with its tip on the real location
+    const cy = y - 24;
+    el("path", { class: "tail", d: `M${x - 8} ${cy + 9} L${x} ${y} L${x + 8} ${cy + 9} Z` }, g);
+    el("circle", { class: "mk", cx: x, cy, r }, g);
+    if (p.kind === "bmcri") el("path", { class: "cap", d: `M${x - 9} ${cy - 1} L${x} ${cy - 6} L${x + 9} ${cy - 1} L${x} ${cy + 4} Z M${x - 5} ${cy + 3} V${cy + 7} Q${x} ${cy + 10} ${x + 5} ${cy + 7} V${cy + 3} L${x} ${cy + 6} Z` }, g);
+    else el("text", { class: "glyph", x, y: cy + 5.5 }, g).textContent = p.kind === "metro" ? "M" : "H";
+    const left = p.side === "l", lt = el("text", { x: left ? x - r - 8 : x + r + 8, y: cy - (lines.length - 1) * 8 + 5, class: "plabel", "text-anchor": left ? "end" : "start" }, g);
+    lines.forEach((ln, i) => { el("tspan", { x: left ? x - r - 8 : x + r + 8, dy: i ? "1.2em" : "0" }, lt).textContent = ln; });
+  }
+  for (const s of STARTS) if (s.at) {
+    const g = el("g", { class: "gate" }, svg);
+    el("circle", { cx: s.at[0], cy: s.at[1], r: 8 }, g);
+    const lft = s.id === "krgate"; el("text", { x: s.at[0] + (lft ? -14 : 14), y: s.at[1] + (lft ? 50 : (s.at[1] < 160 ? 26 : -10)), "text-anchor": lft ? "end" : "start" }, g).textContent = s.name;
+  }
+}
+const routeLayer = el("g", { id: "route" });
+const dotLayer = el("g", { id: "dots" });
+
+/* ---------- Event dots ---------- */
+function renderDots() {
+  dotLayer.replaceChildren();
+  document.querySelectorAll("[data-place]").forEach((g) => g.classList.toggle("selected", state.sel?.kind === "place" && state.sel.id === g.dataset.place));
+  const evs = EVENTS.filter((e) => e.day === state.day && state.cats.has(e.cat));
+  const byVenue = {}; evs.forEach((e) => (byVenue[e.venue] ||= []).push(e));
+  const order = { ended: 0, later: 1, soon: 2, live: 3 }, items = [];
+  for (const v in byVenue) {
+    const list = byVenue[v], [cx, cy] = anchor(P[v]);
+    list.forEach((e, i) => { const n = list.length, a = (i / n) * Math.PI * 2 - Math.PI / 2, r = n > 1 ? 22 : 0;
+      items.push({ e, x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r, s: status(e) }); });
+  }
+  items.sort((p, q) => order[p.s] - order[q.s] || (state.sel?.id === p.e.id) - (state.sel?.id === q.e.id));
+  for (const { e, x, y, s } of items) {
+    const sel = state.sel?.kind === "event" && state.sel.id === e.id;
+    const g = el("g", { class: `dot ${s}${sel ? " selected" : ""}`, transform: `translate(${x} ${y})`, tabindex: 0, role: "button", "aria-label": `${e.title}, ${P[e.venue].name}, ${e.start} to ${e.end}`, "data-id": e.id }, dotLayer);
+    el("circle", { class: "hit", r: 20 }, g);
+    if (s === "live") for (const k of ["r1", "r2", "r3"]) el("circle", { class: "ring " + k, r: 8 }, g);
+    el("circle", { class: "halo", r: 16 }, g);
+    el("circle", { class: "core", r: sel ? 10 : 8 }, g);
+    el("text", { class: "tag", x: 16, y: 5 }, g).textContent = e.title.length > 28 ? e.title.slice(0, 27) + "…" : e.title;
+  }
+}
+
+/* ---------- Starting points ---------- */
+function resolveStart() {
+  const s = state.start;
+  if (s.type === "preset") { const st = STARTS.find((x) => x.id === s.id); if (st.place) { const p = P[st.place]; return { at: anchor(p), label: st.name, q: gmapsQ(p) }; } return { at: st.at, label: st.name, q: st.ll ? st.ll.join(",") : null }; }
+  if (s.type === "place") { const p = P[s.id]; return { at: anchor(p), label: p.name, q: gmapsQ(p) }; }
+  if (s.type === "event") { const e = E[s.id], p = P[e.venue]; return { at: anchor(p), label: `${e.title} (${p.name})`, q: gmapsQ(p) }; }
+  return { at: [s.x, s.y], label: "Pinned spot on map", q: null };
+}
+function drawRoute(dest) {
+  routeLayer.replaceChildren();
+  if (!dest) return null;
+  const st = resolveStart(), r = walkRoute(st.at, dest), d = r.pts.map((p) => p.join(",")).join(" ");
+  el("polyline", { points: d, class: "route-glow" }, routeLayer);
+  el("polyline", { points: d, class: "route-line" }, routeLayer);
+  el("circle", { cx: st.at[0], cy: st.at[1], r: 10, class: "route-start" }, routeLayer);
+  el("text", { x: st.at[0] + 15, y: st.at[1] - 12, class: "route-start-label" }, routeLayer).textContent = "Start: " + (st.label.length > 30 ? st.label.slice(0, 29) + "…" : st.label);
+  return { ...r, st };
+}
+
+/* ---------- Search ---------- */
+function searchAll(q, { includeEvents = true } = {}) {
+  q = q.trim().toLowerCase();
+  const score = (txt) => { txt = txt.toLowerCase(); if (!q) return 1; if (txt.startsWith(q)) return 3; if (txt.split(/[\s&().,:·-]+/).some((w) => w.startsWith(q))) return 2; return txt.includes(q) ? 1 : 0; };
+  const evs = !includeEvents ? [] : EVENTS.map((e) => ({ e, s: Math.max(score(e.title), score(P[e.venue].name) * 0.8, score(CATEGORIES[e.cat].name) * 0.7, score(e.org) * 0.6) }))
+    .filter((x) => x.s > 0 && (q || (x.e.day === state.day && status(x.e) === "live")))
+    .sort((a, b) => b.s - a.s || (a.e.day - b.e.day) || toMin(a.e.start) - toMin(b.e.start)).slice(0, 8).map((x) => x.e);
+  const places = PLACES.map((p) => ({ p, s: score(p.name) })).filter((x) => x.s > 0 && q).sort((a, b) => b.s - a.s).slice(0, 6).map((x) => x.p);
+  return { evs, places };
+}
+function makeCombo(input, box, onPick, opts = {}) {
+  let items = [], active = -1;
+  const close = () => { box.hidden = true; input.setAttribute("aria-expanded", "false"); active = -1; };
+  const render = () => {
+    const { evs, places } = searchAll(input.value, opts);
+    items = [...evs.map((e) => ({ kind: "event", id: e.id })), ...places.map((p) => ({ kind: "place", id: p.id }))];
+    let h = "";
+    if (evs.length) h += `<h4>${input.value.trim() ? "Events" : "Live now"}</h4>` + evs.map((e, i) => { const s = status(e);
+      return `<button class="res" role="option" data-i="${i}"><span class="ic" style="background:${CATEGORIES[e.cat].color}"></span><span class="tx"><b>${esc(e.title)}</b><small>${esc(P[e.venue].name)} · ${FEST.dayNames[e.day]} ${e.start}–${e.end}</small></span><span class="st ${e.day === state.day && s === "live" ? "live" : ""}">${e.day === state.day ? LABEL[s] : FEST.dayNames[e.day]}</span></button>`; }).join("");
+    if (places.length) h += `<h4>Places</h4>` + places.map((p, i) => { const n = EVENTS.filter((e) => e.venue === p.id && e.day === state.day).length;
+      return `<button class="res" role="option" data-i="${evs.length + i}"><span class="ic place"></span><span class="tx"><b>${esc(p.name)}</b><small>${n ? `${n} event${n > 1 ? "s" : ""} on ${FEST.dayNames[state.day]}` : "On the map"}</small></span></button>`; }).join("");
+    if (!items.length) h = input.value.trim() ? `<div class="noresult">Nothing matches “${esc(input.value.trim())}”. Try a building name or event.</div>` : `<div class="noresult">Type an event, category or building name.</div>`;
+    box.innerHTML = h; box.hidden = false; input.setAttribute("aria-expanded", "true"); active = -1;
+    box.querySelectorAll(".res").forEach((b) => b.addEventListener("mousedown", (ev) => { ev.preventDefault(); pick(+b.dataset.i); }));
+  };
+  const pick = (i) => { const it = items[i]; if (!it) return; close(); onPick(it); };
+  const hl = () => box.querySelectorAll(".res").forEach((b) => b.setAttribute("aria-selected", +b.dataset.i === active));
+  input.addEventListener("input", render);
+  input.addEventListener("focus", render);
+  input.addEventListener("blur", () => setTimeout(close, 120));
+  input.addEventListener("keydown", (ev) => {
+    if (ev.key === "ArrowDown") { ev.preventDefault(); active = Math.min(items.length - 1, active + 1); hl(); }
+    else if (ev.key === "ArrowUp") { ev.preventDefault(); active = Math.max(0, active - 1); hl(); }
+    else if (ev.key === "Enter") { ev.preventDefault(); pick(active >= 0 ? active : 0); }
+    else if (ev.key === "Escape") { close(); input.blur(); }
+  });
+}
+makeCombo($("#q"), $("#q-results"), (it) => {
+  $("#q").value = it.kind === "event" ? E[it.id].title : P[it.id].name;
+  select(it);
+  $("#q").blur();
+});
+
+/* ---------- Detail panel ---------- */
+const panel = $("#panel");
+function navBox(destPlace) {
+  const r = drawRoute(anchor(destPlace)), same = r.meters <= 20;
+  const custom = state.start.type !== "preset";
+  const origin = r.st.q ? `&origin=${encodeURIComponent(r.st.q)}` : "";
+  const gmaps = `https://www.google.com/maps/dir/?api=1${origin}&destination=${encodeURIComponent(gmapsQ(destPlace))}&travelmode=walking`;
+  return `
+    <div class="navbox">
+      <h3>Starting point</h3>
+      <div class="seg">${STARTS.map((s) => `<button data-start="${s.id}" aria-pressed="${state.start.type === "preset" && state.start.id === s.id}">${s.name}</button>`).join("")}
+        <button data-start="custom" aria-pressed="${custom || state.customOpen}">Custom…</button></div>
+      ${custom || state.customOpen ? `
+      <div class="custom">
+        <div class="combo"><svg class="glass" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="var(--muted)" stroke-width="1.8"/><path d="M11 11l3.5 3.5" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <input id="start-q" type="search" autocomplete="off" placeholder="Type a building or event" aria-label="Custom starting point">
+          <div class="results" id="start-results" hidden></div></div>
+        <div class="custom-row"><button class="ghost" id="pick">Tap a spot on the map</button>${custom ? `<span class="from">From <b>${esc(r.st.label)}</b></span>` : ""}</div>
+      </div>` : ""}
+      <div class="walk">${same ? `<b>You're here</b>` : `<b>${Math.max(1, Math.ceil(r.meters / WALK_M_PER_MIN))} min walk</b><span>≈ ${r.meters} m · route on map</span>`}</div>
+      <a class="btn primary" href="${gmaps}" target="_blank" rel="noopener">Open in Google Maps ↗</a>
+      <p class="hint">${r.st.q ? "Google Maps opens with this start and destination filled in." : "Google Maps starts from your current location and gives turn-by-turn directions."}</p>
+    </div>`;
+}
+function wireNav() {
+  panel.querySelectorAll("[data-start]").forEach((b) => b.onclick = () => {
+    if (b.dataset.start === "custom") { state.customOpen = true; renderPanel(); $("#start-q")?.focus(); return; }
+    state.start = { type: "preset", id: b.dataset.start }; state.customOpen = false; renderPanel();
+  });
+  const sq = $("#start-q");
+  if (sq) makeCombo(sq, $("#start-results"), (it) => { state.start = { type: it.kind, id: it.id }; state.customOpen = true; renderPanel(); }, { includeEvents: true });
+  const pk = $("#pick"); if (pk) pk.onclick = () => setPicking(true);
+}
+function renderPanel(animate) {
+  const sel = state.sel;
+  if (!sel) { panel.hidden = true; drawRoute(null); return; }
+  if (animate) { panel.classList.remove("enter"); void panel.offsetWidth; panel.classList.add("enter"); }
+  if (sel.kind === "event") {
+    const e = E[sel.id], s = status(e), p = P[e.venue], st = toMin(e.start), en = toMin(e.end), today = e.day === state.day;
+    const cd = !today ? `${FEST.dayNames[e.day]}` : s === "live" ? `Ends in ${dur(en - state.t)}` : s === "ended" ? `Ended ${dur(state.t - en)} ago` : `Starts in ${dur(st - state.t)}`;
+    const pct = Math.max(0, Math.min(100, ((state.t - st) / (en - st)) * 100));
+    panel.innerHTML = `
+      <div class="p-top"><span class="pill ${s}">${LABEL[s]}</span><span class="countdown">${cd}</span><button class="close" id="p-close" aria-label="Close details">×</button></div>
+      <h2 id="p-title">${esc(e.title)}</h2>
+      <div class="p-cat"><span class="sw" style="background:${CATEGORIES[e.cat].color}"></span>${CATEGORIES[e.cat].name}</div>
+      ${s === "live" && today ? `<div class="timeline" aria-hidden="true"><b style="width:${pct}%"></b></div>` : ""}
+      <dl>
+        <dt>When</dt><dd>${FEST.dayNames[e.day]} · <span class="mono">${e.start} – ${e.end}</span></dd>
+        <dt>Where</dt><dd><button class="linkish" id="p-place">${esc(p.name)}</button></dd>
+        <dt>By</dt><dd>${esc(e.org)}</dd>
+      </dl>
+      <p class="p-desc">${esc(e.desc)}</p>
+      ${navBox(p)}`;
+    $("#p-place").onclick = () => select({ kind: "place", id: p.id });
+  } else {
+    const p = P[sel.id], evs = EVENTS.filter((e) => e.venue === p.id && e.day === state.day).sort((a, b) => toMin(a.start) - toMin(b.start));
+    panel.innerHTML = `
+      <div class="p-top"><span class="pill place">Place</span><span class="countdown">${evs.length ? `${evs.length} event${evs.length > 1 ? "s" : ""} on ${FEST.dayNames[state.day]}` : `No events on ${FEST.dayNames[state.day]}`}</span><button class="close" id="p-close" aria-label="Close details">×</button></div>
+      <h2 id="p-title">${esc(p.name)}</h2>
+      ${evs.length ? `<div class="evlist">${evs.map((e) => { const s = status(e); return `<button data-ev="${e.id}"><span class="mono">${e.start}</span><span class="nm">${esc(e.title)}</span><span class="pill ${s}">${LABEL[s]}</span></button>`; }).join("")}</div>` : ""}
+      ${navBox(p)}`;
+    panel.querySelectorAll("[data-ev]").forEach((b) => b.onclick = () => select({ kind: "event", id: b.dataset.ev }));
+  }
+  panel.hidden = false;
+  $("#p-close").onclick = () => select(null);
+  wireNav();
+}
+function select(sel, focus = true) {
+  const opening = !state.sel && sel;
+  state.sel = sel;
+  if (sel?.kind === "event" && E[sel.id].day !== state.day) { state.day = E[sel.id].day; state.follow = false; renderDays(); renderClock(); renderStrip(); }
+  renderDots(); renderPanel(opening);
+  if (sel && focus) {
+    const [cx, cy] = anchor(P[sel.kind === "event" ? E[sel.id].venue : sel.id]);
+    const w = Math.min(vb.w, 900), h = w * aspect(), wide = svg.clientWidth > 720;
+    animateTo({ x: cx - w / 2 + (wide ? w * 0.18 : 0), y: cy - h / 2 + (wide ? 0 : h * 0.33), w, h });
+  }
+}
+function setPicking(on) {
+  state.picking = on; $("#stage").classList.toggle("picking", on); $("#toast").hidden = !on;
+  if (on && innerWidth <= 720) panel.hidden = true; else if (!on) renderPanel();
+}
+$("#toast-cancel").onclick = () => setPicking(false);
+
+/* ---------- Strip, days, clock ---------- */
+function renderStrip() {
+  const strip = $("#strip"); strip.replaceChildren();
+  const live = EVENTS.filter((e) => e.day === state.day && status(e) === "live" && state.cats.has(e.cat));
+  const lab = document.createElement("span"); lab.className = "strip-label"; lab.innerHTML = `<i></i>Live now · ${live.length}`; strip.appendChild(lab);
+  if (!live.length) { const em = document.createElement("span"); em.className = "empty"; em.textContent = "Nothing on right now. Amber rings mark what starts soon."; strip.appendChild(em); }
+  for (const e of live) { const c = document.createElement("button"); c.className = "chip live-chip"; c.innerHTML = `${esc(e.title)}<small>till ${e.end}</small>`; c.onclick = () => select({ kind: "event", id: e.id }); strip.appendChild(c); }
+  $("#fbtn").classList.toggle("on", state.cats.size !== Object.keys(CATEGORIES).length);
+}
+function renderFilters() {
+  const pop = $("#fpop"); pop.hidden = !state.fopen; $("#fbtn").setAttribute("aria-expanded", !!state.fopen);
+  if (!state.fopen) return;
+  pop.innerHTML = `<h4>Show</h4>` + Object.entries(CATEGORIES).map(([k, c]) => `<button class="row" data-cat="${k}" aria-pressed="${state.cats.has(k)}"><span class="sw" style="background:${c.color}"></span>${c.name}</button>`).join("") +
+    `<div class="key"><div><i style="background:var(--live)"></i>Happening now</div><div><i style="border:2.5px solid var(--soon)"></i>Starts within the hour</div><div><i style="background:var(--idle);opacity:.75"></i>Later</div><div><i style="background:var(--ended)"></i>Ended</div></div>`;
+  pop.querySelectorAll("[data-cat]").forEach((b) => b.onclick = () => { const k = b.dataset.cat; state.cats.has(k) ? state.cats.delete(k) : state.cats.add(k); renderFilters(); renderStrip(); renderDots(); });
+}
+$("#fbtn").onclick = (ev) => { ev.stopPropagation(); state.fopen = !state.fopen; renderFilters(); };
+document.addEventListener("pointerdown", (ev) => { if (state.fopen && !ev.target.closest("#fpop, #fbtn")) { state.fopen = false; renderFilters(); } });
+function renderDays() {
+  $("#days").innerHTML = FEST.dayNames.map((n, i) => `<button data-day="${i}" aria-pressed="${i === state.day}">${n}</button>`).join("");
+  $("#days").querySelectorAll("button").forEach((b) => b.onclick = () => { state.day = +b.dataset.day; state.follow = false; if (state.sel?.kind === "event" && E[state.sel.id].day !== state.day) state.sel = null; refresh(); });
+}
+function renderClock() {
+  $("#t").value = state.t; $("#t-out").textContent = fmt(state.t); $("#clock-time").textContent = fmt(state.t);
+  const live = state.follow && todayIdx() === state.day;
+  $("#clock-day").textContent = `${FEST.dayNames[state.day]} · ${live ? "live" : "preview"}`;
+}
+function refresh() { renderDays(); renderClock(); renderStrip(); renderDots(); renderPanel(); }
+
+/* ---------- Pan & zoom ---------- */
+function clampVB(v) {
+  v.w = Math.max(320, Math.min(maxW(), v.w)); v.h = v.w * aspect();
+  v.x = Math.max(WORLD.x, Math.min(WORLD.x + WORLD.w - v.w, v.x));
+  v.y = Math.max(WORLD.y, Math.min(WORLD.y + WORLD.h - v.h, v.y));
+  return v;
+}
+function fitVB() { const w = maxW(); return clampVB({ w, x: WORLD.x + (WORLD.w - w) / 2, y: WORLD.y + (WORLD.h - w * aspect()) / 2 }); }
+function toSvg(cx, cy) { const p = svg.createSVGPoint(); p.x = cx; p.y = cy; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+function zoomAt(px, py, f) { vb = clampVB({ x: px - (px - vb.x) * f, y: py - (py - vb.y) * f, w: vb.w * f, h: vb.h * f }); setVB(); }
+let anim;
+function animateTo(target) {
+  cancelAnimationFrame(anim); target = clampVB({ ...target });
+  const from = { ...vb }, t0 = performance.now(), D = matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : 480;
+  const step = (now) => { const k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 3);
+    for (const key of ["x", "y", "w", "h"]) vb[key] = from[key] + (target[key] - from[key]) * e;
+    setVB(); if (k < 1) anim = requestAnimationFrame(step); };
+  anim = requestAnimationFrame(step);
+}
+function updateScale() { const ctm = svg.getScreenCTM(); if (ctm) $("#scalebar").style.width = (50 / M_PER_UNIT) * ctm.a + "px"; }
+
+const ptrs = new Map(); let drag = null, moved = 0, pinchPrev = null;
+svg.addEventListener("pointerdown", (ev) => {
+  svg.setPointerCapture(ev.pointerId); ptrs.set(ev.pointerId, [ev.clientX, ev.clientY]); cancelAnimationFrame(anim);
+  if (ptrs.size === 1) { drag = { cx: ev.clientX, cy: ev.clientY, vb: { ...vb }, k: 1 / svg.getScreenCTM().a, dot: ev.target.closest(".dot"), place: ev.target.closest("[data-place]") }; moved = 0; }
+  else { drag = null; pinchPrev = null; }
+});
+svg.addEventListener("pointermove", (ev) => {
+  if (!ptrs.has(ev.pointerId)) return;
+  ptrs.set(ev.pointerId, [ev.clientX, ev.clientY]);
+  if (ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]), m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    if (pinchPrev) { const p = toSvg(m[0], m[1]); zoomAt(p.x, p.y, pinchPrev.d / d);
+      const k = 1 / svg.getScreenCTM().a; vb.x -= (m[0] - pinchPrev.m[0]) * k; vb.y -= (m[1] - pinchPrev.m[1]) * k; clampVB(vb); setVB(); }
+    pinchPrev = { d, m }; moved = 99; return;
+  }
+  if (!drag) return;
+  const dx = ev.clientX - drag.cx, dy = ev.clientY - drag.cy; moved = Math.max(moved, Math.hypot(dx, dy));
+  if (moved > 4) { svg.classList.add("dragging"); vb = clampVB({ ...drag.vb, x: drag.vb.x - dx * drag.k, y: drag.vb.y - dy * drag.k }); setVB(); }
+});
+const endPtr = (ev) => {
+  ptrs.delete(ev.pointerId); svg.classList.remove("dragging");
+  if (ev.type === "pointerup" && drag && moved <= 4) {
+    if (state.picking) { const p = toSvg(ev.clientX, ev.clientY); state.start = { type: "point", x: Math.round(p.x), y: Math.round(p.y) }; state.customOpen = true; setPicking(false); }
+    else if (drag.dot) select({ kind: "event", id: drag.dot.dataset.id });
+    else if (drag.place) select({ kind: "place", id: drag.place.dataset.place });
+    else if (state.sel) select(null, false);
+  }
+  if (ptrs.size < 2) pinchPrev = null; if (ptrs.size === 0) drag = null;
+};
+svg.addEventListener("pointerup", endPtr); svg.addEventListener("pointercancel", endPtr);
+svg.addEventListener("wheel", (ev) => { ev.preventDefault(); const p = toSvg(ev.clientX, ev.clientY); zoomAt(p.x, p.y, Math.exp(ev.deltaY * 0.0015)); }, { passive: false });
+svg.addEventListener("keydown", (ev) => { const d = ev.target.closest?.(".dot"); if (d && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); select({ kind: "event", id: d.dataset.id }); } });
+const zoomCenter = (f) => animateTo({ x: vb.x + vb.w * (1 - f) / 2, y: vb.y + vb.h * (1 - f) / 2, w: vb.w * f, h: vb.h * f });
+$("#zin").onclick = () => zoomCenter(0.7); $("#zout").onclick = () => zoomCenter(1.4); $("#zfit").onclick = () => animateTo(fitVB());
+document.addEventListener("keydown", (ev) => { if (ev.key !== "Escape") return; if (state.picking) setPicking(false); else if (state.sel && !ev.target.closest?.("input")) select(null, false); });
+new ResizeObserver(() => {
+  if (!svg.clientWidth) return;
+  const wasFit = vb.w >= fitW - 1, cx = vb.x + vb.w / 2, cy = vb.y + vb.h / 2, w = vb.w;
+  fitW = maxW();
+  vb = wasFit ? fitVB() : clampVB({ w, x: cx - w / 2, y: cy - (w * aspect()) / 2 });
+  setVB();
+}).observe(svg);
+
+/* ---------- Time controls ---------- */
+$("#t").addEventListener("input", (ev) => { state.t = +ev.target.value; state.follow = false; renderClock(); renderStrip(); renderDots(); renderPanel(); });
+$("#nowbtn").onclick = () => { const ti = todayIdx(); if (ti >= 0) state.day = ti; state.follow = true; state.t = Math.max(480, Math.min(1380, nowMin())); refresh(); };
+setInterval(() => { if (!state.follow) return; const t = Math.max(480, Math.min(1380, nowMin()));
+  if (t !== state.t && !document.activeElement?.matches?.("#panel input")) { state.t = t; refresh(); } }, 20000);
+
+/* ---------- Boot ---------- */
+drawBase(); svg.appendChild(routeLayer); svg.appendChild(dotLayer); vb = fitVB(); fitW = vb.w; setVB();
+if (todayIdx() >= 0) { state.day = todayIdx(); state.follow = true; state.t = Math.max(480, Math.min(1380, nowMin())); }
+refresh();
+</script>
+
+
+</body></html>
